@@ -3,8 +3,6 @@ import math
 import vehicle_tools  as tools
 import stimulus
 
-# vy = 0
-
 class vehicle(object):
     def __init__(self, xpos, ypos, z, stim, alpha):
         self.xpos = xpos
@@ -135,7 +133,7 @@ class vehicle(object):
 
 
 
-    def move(self):
+    def move(self,r,fov):
         global v
         v, v1, v2, a1, a2 = 0, 0, 0, 0, 0
         # acquiring instantaneous co-ordinates of sensors
@@ -144,22 +142,25 @@ class vehicle(object):
         # processing each of m stimuli at a time
         for i in range(m):   
             type = self.stim[i].type
-            # decide on wiring weights based on vehicle type
-            if(type == "1a" or type == "1b"):
-                w1,w2,w3,w4 = 1,1,1,1
-            elif(type == "2a" or type == "3a"):
-                w1,w2,w3,w4 = 1,1,0,0           # parallel wiring
-            elif(type == "2b" or type == "3b"):
-                w1,w2,w3,w4 = 0,0,1,1           # crossed wiring
-            else:
-                w1,w2,w3,w4 = 0,0,0,0
-
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
-            a1 += tools.activation(x,y,s1x,s1y,type)  # activation in 1st sensor due to ith stimulus
-            a2 += tools.activation(x,y,s2x,s2y,type)  # activation in 2nd sensor due to ith stimulus
+            # to check on whether stimulus lies in the Field of View (FoV)
+            if(isInsideFoV(self.xpos,self.ypos,r,self.alpha*180/PI,fov,x,y)):
+                # decide on wiring weights based on vehicle type
+                #print(self.alpha)
+                if(type == "1a" or type == "1b"):
+                    w1,w2,w3,w4 = 1,1,1,1
+                elif(type == "2a" or type == "3a"):
+                    w1,w2,w3,w4 = 1,1,0,0           # parallel wiring
+                elif(type == "2b" or type == "3b"):
+                    w1,w2,w3,w4 = 0,0,1,1           # crossed wiring
+                else:
+                    w1,w2,w3,w4 = 0,0,0,0
 
-            v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
-            v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
+                a1 += tools.activation(x,y,s1x,s1y,type)  # activation in 1st sensor due to ith stimulus
+                a2 += tools.activation(x,y,s2x,s2y,type)  # activation in 2nd sensor due to ith stimulus
+
+                v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
+                v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
         
         v = (v1 + v2) / 2 # net velocity of vehicle
 
@@ -181,4 +182,44 @@ class vehicle(object):
             self.alpha += math.pi
         elif self.ypos <= 0:
             self.alpha += math.pi
+
+def isInsideFoV(x0,y0,r,alpha,theta,x,y):
+    # x0,y0: point of view
+    # x,y: point to be checked for being inside FoV
+    # alpha: agent orientation
+    # theta: scope angle of view
+    # r: distance that agent can see
+    la = PI*(alpha+theta/2)/180 # anglular co-ordinate of left extreme FoV
+    ra = PI*(alpha-theta/2)/180 # anglular co-ordinate of right extreme FoV
+    # co-ordinates of extreme left and right points of FoV
+    xr  = x0 + r*math.cos(la)
+    yr  = y0 + r*math.sin(la)
+    xl  = x0 + r*math.cos(ra)
+    yl  = y0 + r*math.sin(ra)
+
+    # criteria to verify if a point lies within a sector of a circle
+    # check this link for details: https://stackoverflow.com/questions/13652518/efficiently-find-points-inside-a-circle-sector#:~:text=For%20a%20point%20to%20be,circle%20than%20the%20sector's%20radius.
+    l_check = (yl-y0)*(x-x0) + (x0-xl)*(y-y0)
+    r_check = (yr-y0)*(x-x0) + (x0-xr)*(y-y0)
+
+    proximity = dist(x0,y0,x,y) # distance between the agent and stimulus
+
+    if(l_check<la and r_check>ra and proximity<r and theta<180):
+        return 1
+    if(l_check<la and r_check>ra and proximity<r and theta == 180):
+        return 1
+    elif(l_check<la and r_check<ra and proximity<r and theta>180):
+        return 1
+    elif(l_check>la and r_check>ra and proximity<r and theta>180):
+        return 1
+    elif(l_check<la and r_check>ra and proximity<r and theta>180):
+        return 1
+
+    else:            
+        return 0
+
+
+
+def dist(x,y,sx,sy):
+    return sqrt((x-sx)**2+(y-sy)**2)
 

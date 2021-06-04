@@ -35,21 +35,29 @@ def draw():
     global objs
     global n
     global d
+    global r
+    global fov
 
     if(frameCount == 1):
         background('#004477')
         fill(126)
-        rect(.9*width, 500, 80, 20)
+        rect(.9*width, 550, 80, 20)
         fill(0)
         textSize(16)
-        text("     Run", .9*width, 516)      
+        text("     Run", .9*width, 566)      
         cp5 = ControlP5(this)   
         nAgent = cp5.addSlider("Agents")
         nAgent.setPosition(.9*width,400).setSize(80,20).setRange(1, 1000).setValue(400).setNumberOfTickMarks(1000).setSliderMode(Slider.FLEXIBLE)
 
         
         scale = cp5.addSlider("scale")
-        scale.setPosition(.9*width,450).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        scale.setPosition(.9*width,430).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+        fov_dist = cp5.addSlider("r of FoV")
+        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(100, 1000).setValue(300).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+        angle =  cp5.addSlider("FoV Angle")
+        angle.setPosition(.9*width,490).setSize(80,20).setRange(30, 300).setValue(270).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         l = "zero", "one", "two", "three", "four", "five", "six", "seven"
@@ -66,18 +74,21 @@ def draw():
 
         cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
-    if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>500 and mouseY<520:
+    if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>550 and mouseY<570:
         stim = list()  # creating an array of stimulus
         flag = int(cp5.getController("Opt for Stimuli Motion").getValue())
         n2a = int(cp5.getController("2a stimulus population").getValue())
         n2b = int(cp5.getController("2b stimulus population").getValue())
         n3a = int(cp5.getController("3a stimulus population").getValue())
         n = int(cp5.getController("Agents").getValue())
+        d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
+        r = int(cp5.getController("r of FoV").getValue())
+        fov = int(cp5.getController("FoV Angle").getValue())
 
 
         for i in range(n2a):
             if(flag==1):
-                stim.append(stimulus.stimulus(img1, '2a', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,10), random.uniform(0,10)))
+                stim.append(stimulus.stimulus(img1, '2a', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3)))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img1, '2a', random.uniform(0,.9*width), random.uniform(0,D), 0,0))
 
@@ -99,7 +110,6 @@ def draw():
 
 
         objs = list()   # creating an array of vehicles
-        d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
             objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha))
@@ -115,16 +125,16 @@ def draw():
         fill(126)
         rect(.9*width, 0, .1*width, height)
         fill(255)
-        rect(.9*width, 500, 80, 20)
+        rect(.9*width, 550, 80, 20)
         fill(0)
         textSize(16)
-        text("Run Again", .9*width, 516)
+        text("Run Again", .9*width, 566)
         
         textSize(12)
-        text("Stimulus Provocations", .9*width + 2, 545)
-        text("2a: Cowardness", .9*width + 5, 565)
-        text("2b: Aggression", .9*width + 5, 580)
-        text("3a: Love", .9*width + 5, 595)
+        text("Stimulus Provocations", .9*width + 2, 590)
+        text("2a: Cowardness", .9*width + 5, 605)
+        text("2b: Aggression", .9*width + 5, 620)
+        text("3a: Love", .9*width + 5, 635)
 
 
         for i in range(len(stim)):
@@ -134,5 +144,5 @@ def draw():
 
         for i in range(n):
             # processing display and movement of stimulus
-            objs[i].move()  
+            objs[i].move(r,fov)  
             objs[i].display()
