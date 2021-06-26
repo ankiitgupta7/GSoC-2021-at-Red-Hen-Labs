@@ -1,0 +1,1 @@
+* While there is no location in the vervets’ habitat where they can seek effective shelter from all three predator types, they seek out bushes to conceal themselves from hawks, trees to escape from leopards, and stoney ground to stay safe from snakes.

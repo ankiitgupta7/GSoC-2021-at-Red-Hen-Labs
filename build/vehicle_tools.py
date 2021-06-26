@@ -6,24 +6,16 @@ def distance(x,y,sx,sy):
 
 # i : activation due to i'th stimulus
 # index : refers to index of sensor (in case of multiple)
-def activation(x,y,sx,sy,type):
+def activation(x,y,sx,sy,behav):
     r = distance(x,y,sx,sy)
-    if(type == "1b" or type == "3a" or type == "3b"):
+    if(behav == "1b" or behav == "3a" or behav == "3b"):
         k=.1
         k1=1
         k2=.00001
         return k*(k1+k2*r*r)
-    elif(type == "1a" or type == "2a" or type == "2b"):
-        k=10000
+    elif(behav == "1a" or behav == "2a" or behav == "2b"):
+        k=20000
         k1=1
         k2=1
         return k/(k1+k2*r*r)
 
-# to calibrate the orientation of vehicle
-def sign(cx,x):
-    xcoeff = 0
-    if(x<cx):
-        xcoeff = -1
-    else:
-        xcoeff = 1
-    return xcoeff

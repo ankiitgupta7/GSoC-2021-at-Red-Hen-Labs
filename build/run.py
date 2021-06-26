@@ -13,9 +13,9 @@ import vehicle
 D = 650 #canvas dimensions
 
 
-img1 = loadImage("E:/Work/Active/Red Hen Lab/Images/2a.png")
-img2 = loadImage("E:/Work/Active/Red Hen Lab/Images/2b.png")
-img3 = loadImage("E:/Work/Active/Red Hen Lab/Images/3a.png")
+img1 = loadImage("E:/Work/Active/Red Hen Lab/Images/leopard2.jpg")
+img2 = loadImage("E:/Work/Active/Red Hen Lab/Images/hawk1.jpg")
+img3 = loadImage("E:/Work/Active/Red Hen Lab/Images/python5.jpg")
 
 
 
@@ -37,6 +37,8 @@ def draw():
     global d
     global r
     global fov
+    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, resourceX, resourceY
+
 
     if(frameCount == 1):
         background('#004477')
@@ -44,68 +46,102 @@ def draw():
         rect(.9*width, 550, 80, 20)
         fill(0)
         textSize(16)
-        text("     Run", .9*width, 566)      
+        text("     Run", .9*width, 566)
+
+        # locating hideouts
+        lhx, lhy = random.uniform(75+.7*2*D,.9*2*D-75), random.uniform(75,D-75)    # leopard hideout centre
+        lh = lhx, lhy
+        hhx, hhy = random.uniform(75,.2*2*D-75), random.uniform(75,D/2-75)    # hawk hideout centre
+        hh = hhx, hhy
+        phx, phy = random.uniform(75,.2*2*D-75), random.uniform(75 + D/2,D-75)    # python hideout centre
+        ph = phx, phy
+
+
+        resourceX = random.sample(range(int(.2*2*D),int(.7*2*D)),int(.5*2*D/16))
+        resourceY = random.sample(range(0, D), int(D/16))
+
+
+
+            
         cp5 = ControlP5(this)   
+
+        option = "Fixed","Moving"
+        cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
+        cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
+
+        
+        textSize(10)
+        text("Choose No. of Stimulus", .9*width, 60)
+
+        p1 = cp5.addSlider("leopard")
+        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+        p2 = cp5.addSlider("hawk")
+        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+        p3 = cp5.addSlider("python")
+        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+
         nAgent = cp5.addSlider("Agents")
-        nAgent.setPosition(.9*width,400).setSize(80,20).setRange(1, 1000).setValue(400).setNumberOfTickMarks(1000).setSliderMode(Slider.FLEXIBLE)
+        nAgent.setPosition(.9*width,400).setSize(80,20).setRange(0, 900).setValue(400).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
         scale = cp5.addSlider("scale")
         scale.setPosition(.9*width,430).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(100, 1000).setValue(300).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(0, 900).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(80,20).setRange(30, 300).setValue(270).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(270).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
-        l = "zero", "one", "two", "three", "four", "five", "six", "seven"
-        option = "Fixed","Moving"
-        cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
-
-        cp5.addScrollableList("2a stimulus population").setPosition(.9*width, 100).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
-        cp5.addScrollableList("2b stimulus population").setPosition(.9*width, 200).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
-        cp5.addScrollableList("3a stimulus population").setPosition(.9*width, 300).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
-        cp5.get(ScrollableList, "2a stimulus population").setType(ControlP5.LIST)
-        cp5.get(ScrollableList, "2b stimulus population").setType(ControlP5.LIST)
-        cp5.get(ScrollableList, "3a stimulus population").setType(ControlP5.LIST)
+        
+#        cp5.addScrollableList("2a stimulus population").setPosition(.9*width, 100).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
+ #      cp5.addScrollableList("2b stimulus population").setPosition(.9*width, 200).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
+  #      cp5.addScrollableList("3a stimulus population").setPosition(.9*width, 300).setSize(100, 80).setBarHeight(10).setItemHeight(10).addItems(l)
+   #     cp5.get(ScrollableList, "2a stimulus population").setType(ControlP5.LIST)
+    #    cp5.get(ScrollableList, "2b stimulus population").setType(ControlP5.LIST)
+     #   cp5.get(ScrollableList, "3a stimulus population").setType(ControlP5.LIST)
 
 
-        cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
+
+
 
     if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>550 and mouseY<570:
         stim = list()  # creating an array of stimulus
         flag = int(cp5.getController("Opt for Stimuli Motion").getValue())
-        n2a = int(cp5.getController("2a stimulus population").getValue())
-        n2b = int(cp5.getController("2b stimulus population").getValue())
-        n3a = int(cp5.getController("3a stimulus population").getValue())
+        n1 = int(cp5.getController("leopard").getValue())
+        n2 = int(cp5.getController("hawk").getValue())
+        n3 = int(cp5.getController("python").getValue())
         n = int(cp5.getController("Agents").getValue())
         d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
 
 
-        for i in range(n2a):
+
+        for i in range(n1):
             if(flag==1):
-                stim.append(stimulus.stimulus(img1, '2a', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3)))
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),lh))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img1, '2a', random.uniform(0,.9*width), random.uniform(0,D), 0,0))
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0,0,lh)) # lh: leopard hideout
 
 
-        for i in range(n2b):
+        for i in range(n2):
             if(flag==1):
-                stim.append(stimulus.stimulus(img2, '2b', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3)))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),hh))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img2, '2b', random.uniform(0,.9*width), random.uniform(0,D), 0,0))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0,0,hh))
 
 
 
-        for i in range(n3a):
+        for i in range(n3):
             if(flag==1):
-                stim.append(stimulus.stimulus(img3, '3a', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3)))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),ph))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img3, '3a', random.uniform(0,.9*width), random.uniform(0,D), 0,0))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0,0,ph))
 
 
 
@@ -120,8 +156,39 @@ def draw():
 
 
     if(start==1):
-        
-        background(0,100,100)     # background of environment
+        bc = color(0,100,100)
+        background(bc)     # background of environment
+
+    # resource representation
+        fill(0,255,0)
+
+        for i in range(len(resourceX)):
+            for j in range(len(resourceY)):
+                noStroke()
+                circle(resourceX[i], resourceY[j],2)
+
+        # representing hideouts
+
+        fill(0,133,195)
+        textSize(16)
+        textAlign(CENTER, CENTER)
+        circle(lhx,lhy,150)
+
+        fill(0,195,133)
+        circle(hhx,hhy,150)
+
+
+        fill(189,100,0)
+        circle(phx,phy,150)
+        fill(0)
+        text("Leopard Hideout",lhx,lhy)
+        text("Hawk Hideout",hhx,hhy)
+        text("Python Hideout",phx,phy)
+
+        textAlign(LEFT)
+
+
+        # UI 
         fill(126)
         rect(.9*width, 0, .1*width, height)
         fill(255)
@@ -144,5 +211,5 @@ def draw():
 
         for i in range(n):
             # processing display and movement of stimulus
-            objs[i].move(r,fov)  
+            objs[i].move(r,fov,i)  
             objs[i].display()

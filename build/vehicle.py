@@ -3,6 +3,12 @@ import math
 import vehicle_tools  as tools
 import stimulus
 
+alarm = 0
+flag = 0
+safeTime = []
+for i in range(0,900):
+    safeTime.append(0)
+
 class vehicle(object):
     def __init__(self, xpos, ypos, z, stim, alpha):
         self.xpos = xpos
@@ -15,6 +21,12 @@ class vehicle(object):
         # sets up vehicle color intensity as per net velocity
         if(math.isnan(v)):
             c = color(0)
+        elif(alarm == 1):
+            c = color(0,133,195)    # aware of leopard
+        elif(alarm == 2):
+            c = color(0,195,133)    # aware of hawk
+        elif(alarm == 3):
+            c = color(189,100,0)    # aware of python
         else:
             c = color(int(255*(1-math.exp(-v))))
         stroke(c)
@@ -133,42 +145,77 @@ class vehicle(object):
 
 
 
-    def move(self,r,fov):
-        global v
-        v, v1, v2, a1, a2 = 0, 0, 0, 0, 0
+    def move(self,r,fov,index):
+        global v, safeTime, isOutsideHO, alarm, flag
+        v, v1, v2, a1, a2, alarm, isOutsideHO = 0, 0, 0, 0, 0, 0, 0
         # acquiring instantaneous co-ordinates of sensors
         s1x,s1y,s2x,s2y = self.sensorLocation()
         m = len(self.stim)
         # processing each of m stimuli at a time
         for i in range(m):   
             type = self.stim[i].type
+            hx,hy = self.stim[i].hl  # corresponding hideout co-ordinates
+
+           # print(self.stim[i].hl,hx,hy)
+
+            # updating behavioural wiring based on type
+            if(type == "leopard" or type == "hawk" or type == "python"):
+                behav = "2a"
+
+
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
-            # to check on whether stimulus lies in the Field of View (FoV)
-            if(isInsideFoV(self.xpos,self.ypos,r,self.alpha*180/PI,fov,x,y)):
+
+            if(dist(self.xpos,self.ypos,hx,hy)>75):
+                isOutsideHO = 1
+
+            # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding hideout
+            if(isInsideFoV(self.xpos,self.ypos,r,self.alpha*180/PI,fov,x,y) and isOutsideHO):
                 # decide on wiring weights based on vehicle type
                 #print(self.alpha)
-                if(type == "1a" or type == "1b"):
+                
+                if(behav == "1a" or behav == "1b"):
                     w1,w2,w3,w4 = 1,1,1,1
-                elif(type == "2a" or type == "3a"):
+                elif(behav == "2a" or behav == "3a"):
                     w1,w2,w3,w4 = 1,1,0,0           # parallel wiring
-                elif(type == "2b" or type == "3b"):
+                elif(behav == "2b" or behav == "3b"):
                     w1,w2,w3,w4 = 0,0,1,1           # crossed wiring
                 else:
                     w1,w2,w3,w4 = 0,0,0,0
 
-                a1 += tools.activation(x,y,s1x,s1y,type)  # activation in 1st sensor due to ith stimulus
-                a2 += tools.activation(x,y,s2x,s2y,type)  # activation in 2nd sensor due to ith stimulus
+                a1 += tools.activation(x,y,s1x,s1y,behav)  # activation in 1st sensor due to ith stimulus
+                a2 += tools.activation(x,y,s2x,s2y,behav)  # activation in 2nd sensor due to ith stimulus
+                
+                self.alpha = orientAlpha(hx,hy,self.xpos,self.ypos)
 
                 v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
                 v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
+
+                safeTime[index] = 100   # time window till vervets moves towards the hideout after being aware
+
+                if(type == "leopard"):
+                    alarm = 1
+                elif(type == "hawk"):
+                    alarm = 2
+                elif(type == "python"):
+                    alarm = 3
+
+                
         
         v = (v1 + v2) / 2 # net velocity of vehicle
+
+
+        
+        if(alarm == 0 and safeTime[index] > 0):    # vervets keeps moving till safetime becomes 0
+            v = 2
+            safeTime[index] = safeTime[index] - 1
+            #print index,safeTime[index]
+            
+
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
 
-        self.alpha += (v1 - v2) * .05
-
+        self.alpha += (v1 - v2) * .08 # the rotating factor = 0.05
         # updating the new position as vehicle moves
         self.xpos = self.xpos + vx
         self.ypos = self.ypos + vy
@@ -182,6 +229,17 @@ class vehicle(object):
             self.alpha += math.pi
         elif self.ypos <= 0:
             self.alpha += math.pi
+
+
+def orientAlpha(x0,y0,x,y): # returns alpha at x,y oriented towards x0,y0
+        h = y0-y
+        b = x0-x
+        if(h>0 and b>0):
+            return math.atan(h/b)
+        if(b<0):
+            return math.atan(h/b) + PI
+        if(h<0 and b>0):
+            return math.atan(h/b) + 2*PI
 
 def isInsideFoV(x0,y0,r,alpha,theta,x,y):
     # x0,y0: point of view

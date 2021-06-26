@@ -1,7 +1,7 @@
 import math
 import random
 class stimulus(object):
-    def __init__(self, img, type, x, y, xspeed, yspeed):
+    def __init__(self, img, type, x, y, xspeed, yspeed,hl):
         self.xspeed = xspeed    # horizontal velocity
         self.yspeed = yspeed    # vertical velocity
         # position of stimulus: (x,y)
@@ -9,6 +9,7 @@ class stimulus(object):
         self.y = y
         self.img = img   # stimulus as image
         self.type = type
+        self.hl = hl # corresponding hideout location
 
     # to display stimulus
     def display(self):
@@ -20,6 +21,10 @@ class stimulus(object):
         return self.x,self.y
     # takes care of vehicle movement
     def move(self):
+        isInsideHO = 0
+        hx,hy = self.hl
+        if(dist(self.x,self.y,hx,hy)<75):
+            isInsideHO = 1
         self.x = self.x + self.xspeed
         self.y = self.y + self.yspeed
         # to make the stimuli rebound from boundaries
@@ -27,3 +32,8 @@ class stimulus(object):
             self.xspeed *= -1
         if self.y > height or self.y <=0:
             self.yspeed *= -1
+
+
+
+def dist(x,y,sx,sy):
+    return sqrt((x-sx)**2+(y-sy)**2)
