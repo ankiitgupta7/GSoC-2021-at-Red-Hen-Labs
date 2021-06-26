@@ -145,16 +145,22 @@ class vehicle(object):
 
 
 
-    def move(self,r,fov,index):
-        global v, safeTime, isOutsideHO, alarm, flag
+    def move(self,r,fov,index,hideout):
+        global v, safeTime, isOutsideHO, alarm, flag, lx, ly, hx, hy, px, py
         v, v1, v2, a1, a2, alarm, isOutsideHO = 0, 0, 0, 0, 0, 0, 0
+        lx, ly, hx, hy, px, py = hideout
+
+
+        checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
+
+
         # acquiring instantaneous co-ordinates of sensors
         s1x,s1y,s2x,s2y = self.sensorLocation()
         m = len(self.stim)
         # processing each of m stimuli at a time
         for i in range(m):   
             type = self.stim[i].type
-            hx,hy = self.stim[i].hl  # corresponding hideout co-ordinates
+            hox,hoy = self.stim[i].hl  # corresponding hideout co-ordinates
 
            # print(self.stim[i].hl,hx,hy)
 
@@ -165,11 +171,9 @@ class vehicle(object):
 
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
 
-            if(dist(self.xpos,self.ypos,hx,hy)>75):
-                isOutsideHO = 1
 
             # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding hideout
-            if(isInsideFoV(self.xpos,self.ypos,r,self.alpha*180/PI,fov,x,y) and isOutsideHO):
+            if(isInsideFoV(self.xpos,self.ypos,r,self.alpha*180/PI,fov,x,y)):
                 # decide on wiring weights based on vehicle type
                 #print(self.alpha)
                 
@@ -185,7 +189,7 @@ class vehicle(object):
                 a1 += tools.activation(x,y,s1x,s1y,behav)  # activation in 1st sensor due to ith stimulus
                 a2 += tools.activation(x,y,s2x,s2y,behav)  # activation in 2nd sensor due to ith stimulus
                 
-                self.alpha = orientAlpha(hx,hy,self.xpos,self.ypos)
+                self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
 
                 v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
                 v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
@@ -193,11 +197,16 @@ class vehicle(object):
                 safeTime[index] = 100   # time window till vervets moves towards the hideout after being aware
 
                 if(type == "leopard"):
-                    alarm = 1
+                    if(checkhideout != 1):
+                        alarm = 1
+
                 elif(type == "hawk"):
-                    alarm = 2
+                    if(checkhideout != 2):
+                        alarm = 2
+
                 elif(type == "python"):
-                    alarm = 3
+                    if(checkhideout != 3):
+                        alarm = 3
 
                 
         
@@ -209,6 +218,12 @@ class vehicle(object):
             v = 2
             safeTime[index] = safeTime[index] - 1
             #print index,safeTime[index]
+
+        for i in range(3):      
+            if(checkhideout == i+1 and alarm == i+1):
+                v,v1,v2 = 0,0,0
+            if(checkhideout == i+1 and alarm == 0):
+                v,v1,v2 = 0,0,0                
             
 
 
@@ -229,6 +244,16 @@ class vehicle(object):
             self.alpha += math.pi
         elif self.ypos <= 0:
             self.alpha += math.pi
+
+def isInsideHO(x, y, lx, ly, hx, hy, px, py):
+    if(dist(x,y,lx,ly)<60):
+        return 1
+    elif(dist(x,y,hx,hy)<60):
+        return 2
+    elif(dist(x,y,px,py)<60):
+        return 3
+    else:
+        return -1
 
 
 def orientAlpha(x0,y0,x,y): # returns alpha at x,y oriented towards x0,y0

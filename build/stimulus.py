@@ -21,17 +21,21 @@ class stimulus(object):
         return self.x,self.y
     # takes care of vehicle movement
     def move(self):
-        isInsideHO = 0
         hx,hy = self.hl
-        if(dist(self.x,self.y,hx,hy)<75):
-            isInsideHO = 1
-        self.x = self.x + self.xspeed
-        self.y = self.y + self.yspeed
-        # to make the stimuli rebound from boundaries
+        hd = dist(self.x,self.y,hx,hy)  # distance from hideout
+        
+       # to make the stimuli rebound from boundaries
         if self.x > .9*width or self.x <=0:
             self.xspeed *= -1
         if self.y > height or self.y <=0:
             self.yspeed *= -1
+        if(hd<85):
+            self.xspeed *= -1
+            self.yspeed *= -1
+
+        self.x = self.x + self.xspeed
+        self.y = self.y + self.yspeed
+ 
 
 
 

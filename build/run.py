@@ -37,7 +37,7 @@ def draw():
     global d
     global r
     global fov
-    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, resourceX, resourceY
+    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, resourceX, resourceY, hideout
 
 
     if(frameCount == 1):
@@ -55,6 +55,7 @@ def draw():
         hh = hhx, hhy
         phx, phy = random.uniform(75,.2*2*D-75), random.uniform(75 + D/2,D-75)    # python hideout centre
         ph = phx, phy
+        hideout = lhx, lhy, hhx, hhy, phx, phy
 
 
         resourceX = random.sample(range(int(.2*2*D),int(.7*2*D)),int(.5*2*D/16))
@@ -124,14 +125,14 @@ def draw():
 
         for i in range(n1):
             if(flag==1):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),lh))
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,9), random.uniform(0,9),lh))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0,0,lh)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==1):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),hh))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4),hh))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0,0,hh))
 
@@ -139,7 +140,7 @@ def draw():
 
         for i in range(n3):
             if(flag==1):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,3), random.uniform(0,3),ph))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,6), random.uniform(0,6),ph))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0,0,ph))
 
@@ -211,5 +212,5 @@ def draw():
 
         for i in range(n):
             # processing display and movement of stimulus
-            objs[i].move(r,fov,i)  
+            objs[i].move(r, fov, i, hideout)  
             objs[i].display()
