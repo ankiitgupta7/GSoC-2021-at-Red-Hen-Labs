@@ -14,7 +14,7 @@ def activation(x,y,sx,sy,behav):
         k2=.00001
         return k*(k1+k2*r*r)
     elif(behav == "1a" or behav == "2a" or behav == "2b"):
-        k=20000
+        k=30000
         k1=1
         k2=1
         return k/(k1+k2*r*r)
