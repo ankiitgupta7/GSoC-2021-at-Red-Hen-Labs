@@ -85,14 +85,14 @@ def draw():
 
 
         nAgent = cp5.addSlider("Agents")
-        nAgent.setPosition(.9*width,400).setSize(80,20).setRange(0, 900).setValue(400).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        nAgent.setPosition(.9*width,400).setSize(80,20).setRange(0, 900).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
         scale = cp5.addSlider("scale")
         scale.setPosition(.9*width,430).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(0, 900).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(40, 400).setValue(120).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
         angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(270).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
@@ -125,14 +125,14 @@ def draw():
 
         for i in range(n1):
             if(flag==1):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,9), random.uniform(0,9),lh))
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4),lh))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0,0,lh)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==1):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4),hh))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,8), random.uniform(0,8),hh))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0,0,hh))
 
@@ -140,7 +140,7 @@ def draw():
 
         for i in range(n3):
             if(flag==1):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,6), random.uniform(0,6),ph))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,1), random.uniform(0,1),ph))
             elif(flag==0):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0,0,ph))
 

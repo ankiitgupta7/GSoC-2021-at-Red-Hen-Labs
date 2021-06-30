@@ -29,7 +29,7 @@ class stimulus(object):
             self.xspeed *= -1
         if self.y > height or self.y <=0:
             self.yspeed *= -1
-        if(hd<85):
+        if(hd<95):
             self.xspeed *= -1
             self.yspeed *= -1
 
