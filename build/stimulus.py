@@ -1,7 +1,7 @@
 import math
 import random
 class stimulus(object):
-    def __init__(self, img, type, x, y, xspeed, yspeed,hl):
+    def __init__(self, img, type, x, y, xspeed, yspeed, hl, nextAlarm):
         self.xspeed = xspeed    # horizontal velocity
         self.yspeed = yspeed    # vertical velocity
         # position of stimulus: (x,y)
@@ -10,6 +10,7 @@ class stimulus(object):
         self.img = img   # stimulus as image
         self.type = type
         self.hl = hl # corresponding hideout location
+        self.nextAlarm = nextAlarm # gives information about no. of frames after which an alarm is given for this predator if it remains visible
 
     # to display stimulus
     def display(self):

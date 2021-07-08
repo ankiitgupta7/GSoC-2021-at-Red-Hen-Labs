@@ -9,6 +9,22 @@ safeTime = []
 for i in range(0,900):
     safeTime.append(0)
 
+
+first2See = []
+for i in range(0,30):
+    first2See.append(0)
+
+
+# repository of alarm call details
+
+lAlarms = [] 
+hAlarms = [] 
+pAlarms = []
+_lAlarms = [] 
+_hAlarms = [] 
+_pAlarms = []
+alarms = [(0,0,0,0)]
+
 class vehicle(object):
     def __init__(self, xpos, ypos, z, stim, alpha):
         self.xpos = xpos
@@ -145,23 +161,27 @@ class vehicle(object):
 
 
 
-    def move(self,r,fov,index,hideout):
-        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim
+    def move(self,r,fov,index,hideout,nAgents):
+        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim, first2See, alarms, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
         v, v1, v2, a1, a2, alarm, minProxim = 0, 0, 0, 0, 0, 0, 1200
         lx, ly, hx, hy, px, py = hideout
 
 
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
-
+        auditoryAware = 3*r
         # acquiring instantaneous co-ordinates of sensors
         s1x,s1y,s2x,s2y = self.sensorLocation()
         m = len(self.stim)
+
+       # print frameCount,"alarmGap:",alarmGap,"first2See:",first2See
+
         # processing each of m stimuli at a time
         for i in range(m):   
             type = self.stim[i].type
             hox,hoy = self.stim[i].hl  # corresponding hideout co-ordinates
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
+            alarmGap = self.stim[i].nextAlarm # redundant variable
 
             # updating behavioural wiring based on type
             if(type == "leopard" or type == "hawk" or type == "python"):
@@ -219,8 +239,41 @@ class vehicle(object):
                         alarm = 3
 
                 if(checkhideout != alarm and alarm!=0):
-                    self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)     
-        
+                    self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
+
+                if(first2See[i]==0 and self.stim[i].nextAlarm == 0 and alarm>0):
+                 #   print(frameCount,index,i,alarm)
+                #    giveAlarm(self.xpos,self.ypos,alarm,auditoryAware) # auditoryAware is auditory awareness radius
+                  #  alarms.append(self.xpos,self.ypos,alarm,auditoryAware)
+                    temp = self.xpos,self.ypos,alarm,auditoryAware
+                    if(alarm==1):
+                        lAlarms.append(temp)
+                    elif(alarm==2):
+                        hAlarms.append(temp)
+                    elif(alarm==3):
+                        pAlarms.append(temp)
+
+                    self.stim[i].nextAlarm = 100
+                    first2See[i] = 1
+
+            elif(dist(x,y,self.xpos,self.ypos)<auditoryAware and alarm == 0):   # if doesn't spots this predator, checks for it's alarm
+                alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
+                # TBD: in case of multiple alarms chose closest
+            #    print(frameCount, alarm)
+                if(alarm>0 and alarm!=checkhideout):
+                  #  print(alarm,frameCount,index)
+                    safeTime[index] = 100
+                    v1,v2 = 2,2 # updates velocity in case of alarm
+
+                if(checkhideout != alarm and alarm!=0):
+                    self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
+            
+        #    print(frameCount, i, "th predator", index, "th agent","alarmGap = ",self.stim[i].nextAlarm)
+
+            if(self.stim[i].nextAlarm>0):
+                self.stim[i].nextAlarm -= 1
+
+
         v = (v1 + v2) / 2 # net velocity of vehicle
 
         if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
@@ -248,6 +301,40 @@ class vehicle(object):
             self.alpha += math.pi
         elif self.ypos <= 0:
             self.alpha += math.pi
+
+        if(index == nAgents-1): # end of a particular frame
+         #   print(frameCount,index)
+            for j in range(0,30):
+                first2See[j]=0
+
+            _lAlarms, _hAlarms, _pAlarms = lAlarms, hAlarms, pAlarms
+            lAlarms, hAlarms, pAlarms = [], [], []
+            alarms = []  # overwrite after each frame
+
+
+def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
+    # TBD which alarm to consider finally
+   # print (lAlarms)
+    if(type=="leopard"):
+        for i in range(len(lAlarms)):
+            lAlarmX,lAlarmY,alarm,lAwareRadius = lAlarms[i]
+            if(dist(x,y,lAlarmX,lAlarmY)<lAwareRadius):
+                return 1
+
+    elif(type=="hawk"):
+        for i in range(len(hAlarms)):
+            hAlarmX,hAlarmY,alarm,hAwareRadius = hAlarms[i]
+            if(dist(x,y,hAlarmX,hAlarmY)<hAwareRadius):
+                return 2
+
+    elif(type=="python"):
+        for i in range(len(pAlarms)):
+            pAlarmX,pAlarmY,alarm,pAwareRadius = pAlarms[i]
+            if(dist(x,y,pAlarmX,pAlarmY)<pAwareRadius):
+                return 3
+    return 0
+
+
 
 def isInsideHO(x, y, lx, ly, hx, hy, px, py):
     # confirms hideout presence

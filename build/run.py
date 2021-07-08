@@ -75,13 +75,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 60)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
@@ -95,7 +95,7 @@ def draw():
         fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(40, 400).setValue(120).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(270).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         
@@ -125,24 +125,24 @@ def draw():
 
         for i in range(n1):
             if(flag==1):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4),lh))
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4), lh, 0))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0,0,lh)) # lh: leopard hideout
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==1):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,8), random.uniform(0,8),hh))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,8), random.uniform(0,8), hh, 0))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0,0,hh))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
 
 
 
         for i in range(n3):
             if(flag==1):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,1), random.uniform(0,1),ph))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,1), random.uniform(0,1), ph, 0))
             elif(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0,0,ph))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
 
 
 
@@ -168,7 +168,7 @@ def draw():
                 noStroke()
                 circle(resourceX[i], resourceY[j],2)
 
-        # representing hideouts
+        # representing Refuges
 
         fill(0,133,195)
         textSize(16)
@@ -182,9 +182,9 @@ def draw():
         fill(189,100,0)
         circle(phx,phy,150)
         fill(0)
-        text("Leopard Hideout",lhx,lhy)
-        text("Hawk Hideout",hhx,hhy)
-        text("Python Hideout",phx,phy)
+        text("Leopard Refuge",lhx,lhy)
+        text("Hawk Refuge",hhx,hhy)
+        text("Python Refuge",phx,phy)
 
         textAlign(LEFT)
 
@@ -212,5 +212,5 @@ def draw():
 
         for i in range(n):
             # processing display and movement of stimulus
-            objs[i].move(r, fov, i, hideout)  
+            objs[i].move(r, fov, i, hideout,n)  
             objs[i].display()
