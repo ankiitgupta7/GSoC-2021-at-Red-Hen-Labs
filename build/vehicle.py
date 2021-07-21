@@ -159,9 +159,7 @@ class vehicle(object):
     def location(self):
         return self.xpos,self.ypos
 
-
-
-    def move(self,r,fov,index,hideout,nAgents):
+    def move(self,r,fov,index,hideout,nAgents,toggleAlarm):
         global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim, first2See, alarms, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
         v, v1, v2, a1, a2, alarm, minProxim = 0, 0, 0, 0, 0, 0, 1200
         lx, ly, hx, hy, px, py = hideout
@@ -256,8 +254,9 @@ class vehicle(object):
                     self.stim[i].nextAlarm = 100
                     first2See[i] = 1
 
-            elif(dist(x,y,self.xpos,self.ypos)<auditoryAware and alarm == 0):   # if doesn't spots this predator, checks for it's alarm
-                alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
+            elif(alarm == 0):   # if doesn't spots this predator, checks for it's alarm
+                if(toggleAlarm == 1):
+                    alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
                 # TBD: in case of multiple alarms chose closest
             #    print(frameCount, alarm)
                 if(alarm>0 and alarm!=checkhideout):

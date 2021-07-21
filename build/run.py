@@ -36,7 +36,7 @@ def draw():
     global n
     global d
     global r
-    global fov
+    global fov, toggleAlarm
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, resourceX, resourceY, hideout
 
 
@@ -66,7 +66,7 @@ def draw():
             
         cp5 = ControlP5(this)   
 
-        option = "Fixed","Moving"
+        option = "Moving","Fixed"
         cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
         cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
@@ -84,6 +84,11 @@ def draw():
         p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
+
+        aToggle = cp5.addSlider("Toggle Alarms")
+        aToggle.setPosition(.9*width,300).setSize(40,20).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+
+
         nAgent = cp5.addSlider("Agents")
         nAgent.setPosition(.9*width,400).setSize(80,20).setRange(0, 900).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
@@ -92,10 +97,10 @@ def draw():
         scale.setPosition(.9*width,430).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(40, 400).setValue(120).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(10, 100).setValue(40).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         
@@ -120,28 +125,28 @@ def draw():
         d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
-
+        toggleAlarm = int(cp5.getController("Toggle Alarms").getValue())
 
 
         for i in range(n1):
-            if(flag==1):
+            if(flag==0):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4), lh, 0))
-            elif(flag==0):
+            elif(flag==1):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
 
 
         for i in range(n2):
-            if(flag==1):
+            if(flag==0):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,8), random.uniform(0,8), hh, 0))
-            elif(flag==0):
+            elif(flag==1):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
 
 
 
         for i in range(n3):
-            if(flag==1):
+            if(flag==0):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,1), random.uniform(0,1), ph, 0))
-            elif(flag==0):
+            elif(flag==1):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
 
 
@@ -212,5 +217,5 @@ def draw():
 
         for i in range(n):
             # processing display and movement of stimulus
-            objs[i].move(r, fov, i, hideout,n)  
+            objs[i].move(r, fov, i, hideout, n, toggleAlarm)  
             objs[i].display()
