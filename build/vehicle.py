@@ -38,11 +38,11 @@ class vehicle(object):
         if(math.isnan(v)):
             c = color(0)
         elif(alarm == 1):
-            c = color(0,133,195)    # aware of leopard
+            c = color(0,0,255)    # aware of leopard
         elif(alarm == 2):
-            c = color(0,195,133)    # aware of hawk
+            c = color(0,255,0)    # aware of hawk
         elif(alarm == 3):
-            c = color(189,100,0)    # aware of python
+            c = color(255,0,0)    # aware of python
         else:
             c = color(int(255*(1-math.exp(-v))))
         stroke(c)
@@ -246,15 +246,26 @@ class vehicle(object):
                     temp = self.xpos,self.ypos,alarm,auditoryAware
                     if(alarm==1):
                         lAlarms.append(temp)
+                        stroke(0,0,255)
+                        noFill()
+                        circle(self.xpos,self.ypos,2*auditoryAware)
                     elif(alarm==2):
                         hAlarms.append(temp)
+                        stroke(0,255,0)
+                        noFill()
+                        circle(self.xpos,self.ypos,2*auditoryAware)
                     elif(alarm==3):
                         pAlarms.append(temp)
+                        stroke(255,0,0)
+                        noFill()
+                        circle(self.xpos,self.ypos,2*auditoryAware)
+
+                    
 
                     self.stim[i].nextAlarm = 100
                     first2See[i] = 1
 
-            elif(alarm == 0):   # if doesn't spots this predator, checks for it's alarm
+            elif(alarm == 0):   # if doesn't spots this predator or isn't alarmed, checks for it's alarm
                 if(toggleAlarm == 1):
                     alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
                 # TBD: in case of multiple alarms chose closest

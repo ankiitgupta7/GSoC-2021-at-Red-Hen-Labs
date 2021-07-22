@@ -129,15 +129,15 @@ def draw():
 
 
         for i in range(n1):
-            if(flag==0):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,4), random.uniform(0,4), lh, 0))
+            if(flag==0):    # 0: moving, 1: fixed
+                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(0,4), random.uniform(0,4), lh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,8), random.uniform(0,8), hh, 0))
+                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(0,8), random.uniform(0,8), hh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
 
@@ -145,7 +145,7 @@ def draw():
 
         for i in range(n3):
             if(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), random.uniform(0,1), random.uniform(0,1), ph, 0))
+                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(0,1), random.uniform(0,1), ph, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
 
@@ -166,7 +166,7 @@ def draw():
         background(bc)     # background of environment
 
     # resource representation
-        fill(0,255,0)
+        fill(255,255,0)
 
         for i in range(len(resourceX)):
             for j in range(len(resourceY)):
@@ -175,16 +175,16 @@ def draw():
 
         # representing Refuges
 
-        fill(0,133,195)
+        fill(0,0,255)
         textSize(16)
         textAlign(CENTER, CENTER)
         circle(lhx,lhy,150)
 
-        fill(0,195,133)
+        fill(0,255,0)
         circle(hhx,hhy,150)
 
 
-        fill(189,100,0)
+        fill(255,0,0)
         circle(phx,phy,150)
         fill(0)
         text("Leopard Refuge",lhx,lhy)
@@ -204,10 +204,13 @@ def draw():
         text("Run Again", .9*width, 566)
         
         textSize(12)
-        text("Stimulus Provocations", .9*width + 2, 590)
-        text("2a: Cowardness", .9*width + 5, 605)
-        text("2b: Aggression", .9*width + 5, 620)
-        text("3a: Love", .9*width + 5, 635)
+        text("Color Mapping", .9*width + 2, 590)
+        fill(255,0,0)
+        text("Red: Python", .9*width + 5, 605)
+        fill(0,255,0)
+        text("Green: Hawk", .9*width + 5, 620)
+        fill(0,0,255)
+        text("Blue: Leopard", .9*width + 5, 635)
 
 
         for i in range(len(stim)):
