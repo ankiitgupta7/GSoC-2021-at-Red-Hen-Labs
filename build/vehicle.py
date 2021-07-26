@@ -2,7 +2,7 @@ import random
 import math
 import vehicle_tools  as tools
 import stimulus
-import resource as rc
+import resource
 
 alarm = 0
 flag = 0
@@ -24,7 +24,6 @@ pAlarms = []
 _lAlarms = [] 
 _hAlarms = [] 
 _pAlarms = []
-alarms = [(0,0,0,0)]
 
 class vehicle(object):
     def __init__(self, xpos, ypos, z, stim, alpha, eLevel, patch):
@@ -163,7 +162,7 @@ class vehicle(object):
         return self.xpos,self.ypos
 
     def move(self,r,fov,index,hideout,nAgents,toggleAlarm):
-        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim, first2See, alarms, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
+        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim, first2See, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
         v, v1, v2, a1, a2, alarm, minProxim = 0, 0, 0, 0, 0, 0, 1200
         lx, ly, hx, hy, px, py = hideout
 
@@ -296,7 +295,6 @@ class vehicle(object):
             if(self.stim[i].nextAlarm>0):
                 self.stim[i].nextAlarm -= 1
 
-        # TBD: calculate movement based on resource locations
 
         v = (v1 + v2) / 2 # net velocity of vehicle
 
@@ -307,10 +305,19 @@ class vehicle(object):
             v = 2
             safeTime[index] = safeTime[index] - 1 # TBD fear level on visually spotting predator recently
 
+        # TBD: calculate movement based on resource locations
+
+
+
+
+
+
+
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
 
         self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
+
         # updating the new position as vehicle moves
         self.xpos = self.xpos + vx
         self.ypos = self.ypos + vy
@@ -337,7 +344,6 @@ class vehicle(object):
 
             _lAlarms, _hAlarms, _pAlarms = lAlarms, hAlarms, pAlarms
             lAlarms, hAlarms, pAlarms = [], [], []
-            alarms = []  # overwrite after each frame
 
 
 def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
