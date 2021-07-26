@@ -3,6 +3,7 @@ import random
 import math
 import stimulus
 import vehicle
+import resource
 # Remember to check on path of the stimulus image file at line 16-18
 
 # Please note that this code requires the library "controlP5", 
@@ -31,13 +32,12 @@ def setup():
 def draw():
     global cp5  
     global start
-    global stim
-    global objs
+    global stim, objs, patch
     global n
     global d
     global r
     global fov, toggleAlarm
-    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, resourceX, resourceY, hideout
+    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
 
 
     if(frameCount == 1):
@@ -58,8 +58,6 @@ def draw():
         hideout = lhx, lhy, hhx, hhy, phx, phy
 
 
-        resourceX = random.sample(range(int(.2*2*D),int(.7*2*D)),int(.5*2*D/16))
-        resourceY = random.sample(range(0, D), int(D/16))
 
 
 
@@ -87,6 +85,10 @@ def draw():
 
         aToggle = cp5.addSlider("Toggle Alarms")
         aToggle.setPosition(.9*width,300).setSize(40,20).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+
+
+        pFactor = cp5.addSlider("Patch Factor")
+        pFactor.setPosition(.9*width,350).setSize(60,20).setRange(2, 20).setValue(12).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
@@ -130,14 +132,14 @@ def draw():
 
         for i in range(n1):
             if(flag==0):    # 0: moving, 1: fixed
-                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(0,4), random.uniform(0,4), lh, 0))
+                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), lh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(0,8), random.uniform(0,8), hh, 0))
+                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-6,6), random.uniform(-6,6), hh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
 
@@ -145,33 +147,40 @@ def draw():
 
         for i in range(n3):
             if(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(0,1), random.uniform(0,1), ph, 0))
+                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-2,2), random.uniform(-2,2), ph, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
 
 
+# creating resource patches in the environment
+        patch = list()
+        k = int(cp5.getController("Patch Factor").getValue())   # number of patches decider, no. of times width/height to be divided
+        patchDensity = .5   # how dense (0,1) the resource point are going to be
+        tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
+        tempY = D/k
+       
 
-        objs = list()   # creating an array of vehicles
+        for i in range(1,k-1):
+            for j in range(1,k-1):
+                if(random.uniform(0,1) < patchDensity):
+                    # patchPoints contain all the resource points coordinates as well as their resource levels
+                    patchPoints = genPatchPoints([.2*2*D + i*tempX,.2*2*D + (i+1)*tempX], [j*tempY,(j+1)*tempY], k)
+                    patchX = .2*2*D + i*tempX + tempX/2
+                    patchY = j*tempY + tempY/2
+                    patch.append(resource.resource(patchX, patchY, patchPoints,tempX,tempY))      
+
+# creating an array of agents
+        objs = list()   
+        eLevel = 500 # assigning initial energy level to be 50% of maximum eLevel = 1000
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, patch))
 
-
-        
         start = 1
-
 
     if(start==1):
         bc = color(0,100,100)
         background(bc)     # background of environment
-
-    # resource representation
-        fill(255,255,0)
-
-        for i in range(len(resourceX)):
-            for j in range(len(resourceY)):
-                noStroke()
-                circle(resourceX[i], resourceY[j],2)
 
         # representing Refuges
 
@@ -222,3 +231,21 @@ def draw():
             # processing display and movement of stimulus
             objs[i].move(r, fov, i, hideout, n, toggleAlarm)  
             objs[i].display()
+
+        for i in range(len(patch)):
+            # display each resource patch
+            patch[i].display()
+
+
+
+def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
+    x0 = list()
+    y0 = list()
+    rLevel = list()
+    x1, x2 = xRange
+    y1, y2 = yRange
+    for i in range(n):
+        x0.append(random.uniform(x1, x2))
+        y0.append(random.uniform(y1, y2))
+        rLevel.append(random.uniform(10,255))
+    return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
