@@ -73,13 +73,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 60)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
 
@@ -174,7 +174,7 @@ def draw():
         eLevel = 500 # assigning initial energy level to be 50% of maximum eLevel = 1000
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, patch))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 0, patch))
 
         start = 1
 
@@ -227,16 +227,14 @@ def draw():
             stim[i].display()
             stim[i].move()
 
-        for i in range(n):
+        for i in range(len(objs)):
             # processing display and movement of stimulus
-            objs[i].move(r, fov, i, hideout, n, toggleAlarm)  
-            objs[i].display()
+            objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm)  
+            objs[i].display() 
 
         for i in range(len(patch)):
             # display each resource patch
             patch[i].display()
-
-
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
@@ -247,5 +245,5 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
     for i in range(n):
         x0.append(random.uniform(x1, x2))
         y0.append(random.uniform(y1, y2))
-        rLevel.append(random.uniform(10,255))
+        rLevel.append(random.uniform(155,255))
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level

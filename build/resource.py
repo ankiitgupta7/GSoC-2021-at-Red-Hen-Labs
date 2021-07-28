@@ -23,4 +23,4 @@ class resource(object):
             circle(x[j],y[j],5)
 
             if(rLevel[j]<255):
-                rLevel[j] += .5
+                rLevel[j] += 2.5

@@ -26,7 +26,7 @@ _hAlarms = []
 _pAlarms = []
 
 class vehicle(object):
-    def __init__(self, xpos, ypos, z, stim, alpha, eLevel, patch):
+    def __init__(self, xpos, ypos, z, stim, alpha, eLevel, fLevel, patch):
         # co-ordinates of the agent
         self.xpos = xpos
         self.ypos = ypos
@@ -34,6 +34,7 @@ class vehicle(object):
         self.stim = stim    # agent having access to all the stimuli present in the environment
         self.alpha = alpha # vehicle's orienation angle wrt +ve x-axis
         self.eLevel = eLevel # energy level of the agent
+        self.fLevel = fLevel # fear level of the agent
         self.patch = patch  # details about each resource patch in the environment
 
     def display(self):
@@ -232,14 +233,17 @@ class vehicle(object):
                 if(type == "leopard"):
                     if(checkhideout != 1):
                         alarm = 1
+                        self.fLevel = 600
 
                 elif(type == "hawk"):
                     if(checkhideout != 2):
                         alarm = 2
+                        self.fLevel = 500
 
                 elif(type == "python"):
                     if(checkhideout != 3):
                         alarm = 3
+                        self.fLevel = 400
 
                 # orienting towards respective refuge if the vervets spots a predator
                 if(checkhideout != alarm and alarm!=0):
@@ -286,6 +290,7 @@ class vehicle(object):
                 if(alarm>0 and alarm!=checkhideout):
                     safeTime[index] = 100
                     # TBD fear level from recent alarm 
+                    self.fLevel = 500
                     v1,v2 = 2,2 # updates velocity in case of alarm
 
                 if(checkhideout != alarm and alarm!=0):
@@ -295,7 +300,7 @@ class vehicle(object):
             if(self.stim[i].nextAlarm>0):
                 self.stim[i].nextAlarm -= 1
 
-
+        # v1, v2, alarm, 
         v = (v1 + v2) / 2 # net velocity of vehicle
 
         if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
@@ -305,11 +310,8 @@ class vehicle(object):
             v = 2
             safeTime[index] = safeTime[index] - 1 # TBD fear level on visually spotting predator recently
 
-        # TBD: calculate movement based on resource locations
-
-
-
-
+        # calculate movement based on resource locations
+        v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
 
 
 
@@ -341,7 +343,7 @@ class vehicle(object):
         if(index == nAgents-1): # end of a particular frame
             for j in range(0,30):
                 first2See[j]=0
-
+            # use alarm lists of this frame for next frame
             _lAlarms, _hAlarms, _pAlarms = lAlarms, hAlarms, pAlarms
             lAlarms, hAlarms, pAlarms = [], [], []
 
@@ -366,6 +368,38 @@ def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
             if(dist(x,y,pAlarmX,pAlarmY)<pAwareRadius):
                 return 3
     return 0
+
+
+def moveToForage(x,y,patch,eLevel):
+    patchDist = 1200
+    for i in range(0,len(patch)):
+        totalR, maxR = resourceData(patch[i])
+        if(patchDist>dist(patch[i].patchX,patch[i].patchY,x,y) and totalR/maxR>.1):
+            patchDist = dist(patch[i].patchX,patch[i].patchY,x,y)
+            nearestPatch = i
+    
+    alpha = orientAlpha(patch[nearestPatch].patchX,patch[nearestPatch].patchY,x,y)
+    totalR, maxR = resourceData(patch[nearestPatch])
+
+    if(patchDist > patch[nearestPatch].tempX/3):
+        vel = 2000 / (eLevel + 1000)
+    else:
+        vel = 0
+        if(eLevel<1000):
+            eLevel += totalR * .1  # agent consuming 10% of total resources per frame
+            for i in range(maxR/255):   # number of resource points in the patch
+                patch[nearestPatch].patchPoints[2][i] -= patch[nearestPatch].patchPoints[2][i] * .1    # rLevel decreases with consumption
+
+    return vel, alpha, eLevel
+
+
+def resourceData(ithPatch):
+    d1,d2,rLevel = ithPatch.patchPoints
+    maxR = len(rLevel) * 255
+    totalR = 0
+    for i in range(len(rLevel)):
+        totalR += rLevel[i]
+    return totalR, maxR
 
 
 
