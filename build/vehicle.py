@@ -8,7 +8,7 @@ alarm = 0
 flag = 0
 safeTime = []
 for i in range(0,900):
-    safeTime.append(0)
+    safeTime.append([0,0]) # first value is safeTime value, second is alarm type
 
 
 first2See = []
@@ -37,18 +37,21 @@ class vehicle(object):
         self.fLevel = fLevel # fear level of the agent
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self):
+    def display(self, index):
         # sets up vehicle color intensity as per net velocity
-        if(math.isnan(v)):
-            c = color(0)
-        elif(alarm == 1):
-            c = color(0,0,255)    # aware of leopard
-        elif(alarm == 2):
-            c = color(0,255,0)    # aware of hawk
-        elif(alarm == 3):
-            c = color(255,0,0)    # aware of python
+
+        if(safeTime[index][1]==1 and safeTime[index][0]>10):
+            c = color(0,0,255*safeTime[index][0]/1000)
+        elif(safeTime[index][1]==2 and safeTime[index][0]>10):
+            c = color(0,255*safeTime[index][0]/1000,0)
+        elif(safeTime[index][1]==3 and safeTime[index][0]>10):
+            c = color(255*safeTime[index][0]/1000,0,0)   
         else:
-            c = color(int(255*(1-math.exp(-v))))
+            c = color(int(255*self.eLevel/1000))            
+            if(self.eLevel > 1000):
+                c = color(255)
+
+
         stroke(c)
         self.displayBody()
         self.displayW1()
@@ -167,6 +170,9 @@ class vehicle(object):
         v, v1, v2, a1, a2, alarm, minProxim = 0, 0, 0, 0, 0, 0, 1200
         lx, ly, hx, hy, px, py = hideout
 
+        #setting up hunger level
+        hLevel = 1000 - self.eLevel
+
         # checking whether the agent is inside a refuge
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
@@ -180,7 +186,9 @@ class vehicle(object):
         m = len(self.stim)  
 
         # processing each of m stimuli at a time
-        for i in range(m):   
+        for i in range(m):
+            if(hLevel > self.fLevel):
+                break
             type = self.stim[i].type    # type of predator
             hox,hoy = self.stim[i].hl  # corresponding hideout co-ordinates
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
@@ -226,7 +234,6 @@ class vehicle(object):
                 v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
                 v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
 
-                safeTime[index] = 100   # time window till vervets moves towards the hideout after being aware
                 # TBD update fear level on visually spotting predator
 
                 # getting alarmed about a predator (if agent is not in refuge) as it the vervet sees the predator
@@ -244,6 +251,8 @@ class vehicle(object):
                     if(checkhideout != 3):
                         alarm = 3
                         self.fLevel = 400
+
+                safeTime[index] = [self.fLevel,alarm]   # time window till vervets moves towards the hideout after being aware
 
                 # orienting towards respective refuge if the vervets spots a predator
                 if(checkhideout != alarm and alarm!=0):
@@ -288,10 +297,10 @@ class vehicle(object):
                 # TBD: update fear level on getting alarm call
 
                 if(alarm>0 and alarm!=checkhideout):
-                    safeTime[index] = 100
                     # TBD fear level from recent alarm 
                     self.fLevel = 500
-                    v1,v2 = 2,2 # updates velocity in case of alarm
+                    safeTime[index] = [self.fLevel, alarm]
+                    v1,v2 = 2 * safeTime[index][0] / 1000,2 * safeTime[index][0] / 1000 # updates velocity in case of alarm
 
                 if(checkhideout != alarm and alarm!=0):
                     self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
@@ -302,23 +311,27 @@ class vehicle(object):
 
         # v1, v2, alarm, 
         v = (v1 + v2) / 2 # net velocity of vehicle
+        self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
 
         if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
             v,v1,v2 = 0,0,0  
         
-        elif(alarm == 0 and safeTime[index] > 0):    # vervets keeps moving till safetime becomes 0
-            v = 2
-            safeTime[index] = safeTime[index] - 1 # TBD fear level on visually spotting predator recently
+        elif(alarm == 0 and safeTime[index][0] > 10):    # vervets keeps moving till safetime becomes 0
+            v = 2 * safeTime[index][0] / 1000
+            safeTime[index][0] -= safeTime[index][0]*.008 # TBD fear level on visually spotting predator recently
+        elif(safeTime[index][0] < 10):
+            self.fLevel = 0
+            alarm = 0
 
         # calculate movement based on resource locations
-        v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
+        if(hLevel > self.fLevel):
+            v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
 
 
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
 
-        self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
 
         # updating the new position as vehicle moves
         self.xpos = self.xpos + vx
@@ -347,7 +360,6 @@ class vehicle(object):
             _lAlarms, _hAlarms, _pAlarms = lAlarms, hAlarms, pAlarms
             lAlarms, hAlarms, pAlarms = [], [], []
 
-
 def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
     # TBD which alarm to consider finally
     if(type=="leopard"):
@@ -372,6 +384,7 @@ def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
 
 def moveToForage(x,y,patch,eLevel):
     patchDist = 1200
+    nearestPatch = 0 # dummy
     for i in range(0,len(patch)):
         totalR, maxR = resourceData(patch[i])
         if(patchDist>dist(patch[i].patchX,patch[i].patchY,x,y) and totalR/maxR>.1):

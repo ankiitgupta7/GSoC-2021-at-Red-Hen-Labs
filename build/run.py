@@ -73,13 +73,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 60)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
 
@@ -132,14 +132,14 @@ def draw():
 
         for i in range(n1):
             if(flag==0):    # 0: moving, 1: fixed
-                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), lh, 0))
+                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-6,6), random.uniform(-6,6), hh, 0))
+                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
 
@@ -147,7 +147,7 @@ def draw():
 
         for i in range(n3):
             if(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-2,2), random.uniform(-2,2), ph, 0))
+                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0))
             elif(flag==1):
                 stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
 
@@ -155,7 +155,7 @@ def draw():
 # creating resource patches in the environment
         patch = list()
         k = int(cp5.getController("Patch Factor").getValue())   # number of patches decider, no. of times width/height to be divided
-        patchDensity = .5   # how dense (0,1) the resource point are going to be
+        patchDensity = .8   # how dense (0,1) the resource point are going to be
         tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
         tempY = D/k
        
@@ -230,7 +230,7 @@ def draw():
         for i in range(len(objs)):
             # processing display and movement of stimulus
             objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm)  
-            objs[i].display() 
+            objs[i].display(i) 
 
         for i in range(len(patch)):
             # display each resource patch
