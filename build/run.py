@@ -73,36 +73,40 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 60)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(80,15).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,120).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,120).setSize(80,15).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,160).setSize(80,20).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,160).setSize(80,15).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
 
         aToggle = cp5.addSlider("Toggle Alarms")
-        aToggle.setPosition(.9*width,300).setSize(40,20).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+        aToggle.setPosition(.9*width,250).setSize(40,15).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
 
 
         pFactor = cp5.addSlider("Patch Factor")
-        pFactor.setPosition(.9*width,350).setSize(60,20).setRange(2, 20).setValue(12).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        pFactor.setPosition(.9*width,300).setSize(60,15).setRange(2, 20).setValue(12).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+
+        pDensity = cp5.addSlider("Patch Density")
+        pDensity.setPosition(.9*width,330).setSize(60,15).setRange(.1, 1.0).setValue(.6).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
-        nAgent.setPosition(.9*width,400).setSize(80,20).setRange(0, 900).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        nAgent.setPosition(.9*width,400).setSize(80,15).setRange(30, 300).setValue(120).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
         scale = cp5.addSlider("scale")
-        scale.setPosition(.9*width,430).setSize(80,20).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        scale.setPosition(.9*width,430).setSize(80,15).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(80,20).setRange(10, 100).setValue(40).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,460).setSize(80,15).setRange(10, 100).setValue(40).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(80,20).setRange(0, 360).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,490).setSize(80,15).setRange(0, 360).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         
@@ -153,9 +157,9 @@ def draw():
 
 
 # creating resource patches in the environment
-        patch = list()
+        patch = list() 
         k = int(cp5.getController("Patch Factor").getValue())   # number of patches decider, no. of times width/height to be divided
-        patchDensity = .8   # how dense (0,1) the resource point are going to be
+        patchDensity = cp5.getController("Patch Density").getValue()   # how dense (0,1) the resource point are going to be
         tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
         tempY = D/k
        
@@ -242,8 +246,8 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
     rLevel = list()
     x1, x2 = xRange
     y1, y2 = yRange
-    for i in range(n):
+    for i in range(2*n):
         x0.append(random.uniform(x1, x2))
         y0.append(random.uniform(y1, y2))
-        rLevel.append(random.uniform(155,255))
+        rLevel.append(random.uniform(55,255))
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
