@@ -37,7 +37,7 @@ class vehicle(object):
         self.fLevel = fLevel # fear level of the agent
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self, index):
+    def display(self, index, population):
         colorGradient = 255*self.eLevel/1000            
         if(self.eLevel > 1000):
             colorGradient = 255        
@@ -59,6 +59,9 @@ class vehicle(object):
         self.displayW1()
         self.displayW2()
         self.displaySensors()
+        fill(0)
+        text(population,10,635)
+        text("Agents Alive",35,635)
 
 
     def displayBody(self):

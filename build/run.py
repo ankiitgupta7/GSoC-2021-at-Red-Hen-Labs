@@ -231,14 +231,20 @@ def draw():
             stim[i].display()
             stim[i].move()
 
-        for i in range(len(objs)):
-            # processing display and movement of stimulus
-            objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm)  
-            objs[i].display(i) 
-
         for i in range(len(patch)):
             # display each resource patch
             patch[i].display()
+
+        i = 0
+        while(i<len(objs)):
+            # processing display and movement of stimulus
+            if(objs[i].eLevel<10):
+                del objs[i]
+                i -= 1
+            else:
+                objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm)  
+                objs[i].display(i,len(objs))
+            i += 1
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
