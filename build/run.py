@@ -36,7 +36,7 @@ def draw():
     global n
     global d
     global r
-    global fov, toggleAlarm
+    global fov, toggleAlarm, safeTime
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
 
 
@@ -84,7 +84,7 @@ def draw():
 
 
         aToggle = cp5.addSlider("Toggle Alarms")
-        aToggle.setPosition(.9*width,250).setSize(40,15).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+        aToggle.setPosition(.9*width,250).setSize(40,15).setRange(0, 2).setValue(1).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
         pFactor = cp5.addSlider("Patch Factor")
@@ -133,6 +133,10 @@ def draw():
         fov = int(cp5.getController("FoV Angle").getValue())
         toggleAlarm = int(cp5.getController("Toggle Alarms").getValue())
 
+
+        safeTime = []
+        for i in range(n):
+            safeTime.append([0,0]) # first value is safeTime value, second is alarm type
 
         for i in range(n1):
             if(flag==0):    # 0: moving, 1: fixed
@@ -242,8 +246,8 @@ def draw():
                 del objs[i]
                 i -= 1
             else:
-                objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm)  
-                objs[i].display(i,len(objs))
+                objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime)  
+                objs[i].display(i,len(objs),safeTime)
             i += 1
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch

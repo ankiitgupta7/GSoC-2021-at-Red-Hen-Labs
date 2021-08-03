@@ -6,11 +6,6 @@ import resource
 
 alarm = 0
 flag = 0
-safeTime = []
-for i in range(0,900):
-    safeTime.append([0,0]) # first value is safeTime value, second is alarm type
-
-
 first2See = []
 for i in range(0,30):
     first2See.append(0)
@@ -37,7 +32,7 @@ class vehicle(object):
         self.fLevel = fLevel # fear level of the agent
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self, index, population):
+    def display(self, index, population,safeTime):
         colorGradient = 255*self.eLevel/1000            
         if(self.eLevel > 1000):
             colorGradient = 255        
@@ -48,11 +43,7 @@ class vehicle(object):
             elif(safeTime[index][1]==2):
                 c = color(0,int(colorGradient),0)
             elif(safeTime[index][1]==3):
-                c = color(int(colorGradient),0,0)   
-        else:
-            c = color(int(colorGradient))            
-
-
+                c = color(int(colorGradient),0,0)       
 
         stroke(c)
         self.displayBody()
@@ -170,8 +161,8 @@ class vehicle(object):
     def location(self):
         return self.xpos,self.ypos
 
-    def move(self,r,fov,index,hideout,nAgents,toggleAlarm):
-        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, first2See, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
+    def move(self,r,fov,index,hideout,nAgents,toggleAlarm,safeTime):
+        global v, alarm, flag, lx, ly, hx, hy, px, py, first2See, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
         v, a1, a2, alarm = 0, 0, 0, 0
         lx, ly, hx, hy, px, py = hideout
 
@@ -183,7 +174,12 @@ class vehicle(object):
 
         # finding the closest predator in the environment to react to
         i = closestPredator(self)
-        if(len(self.stim)>0):   # to check if there are more than one predator
+        
+        # calculate movement based on resource locations
+        if(hLevel > self.fLevel):
+            v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
+
+        elif(len(self.stim)>0 and hLevel < self.fLevel):   # to check if there are more than one predator
             type = self.stim[i].type    # type of predator
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
 
@@ -230,7 +226,7 @@ class vehicle(object):
 
                     if(alarm==1):
                         lAlarms.append(temp)   # storing alarm call data to be used in next frame
-                        if(toggleAlarm == 1): 
+                        if(toggleAlarm > 0): 
                             # representing alarm calls visually in the environment
                             fill(0,0,255)
                             circle(self.xpos,self.ypos,10)
@@ -239,7 +235,7 @@ class vehicle(object):
                             circle(self.xpos,self.ypos,2*auditoryAware)
                     elif(alarm==2):
                         hAlarms.append(temp)
-                        if(toggleAlarm == 1):
+                        if(toggleAlarm > 0):
                             fill(0,255,0)
                             circle(self.xpos,self.ypos,10)
                             stroke(0,255,0)
@@ -247,7 +243,7 @@ class vehicle(object):
                             circle(self.xpos,self.ypos,2*auditoryAware)
                     elif(alarm==3):
                         pAlarms.append(temp)
-                        if(toggleAlarm == 1):
+                        if(toggleAlarm > 0):
                             fill(255,0,0)
                             circle(self.xpos,self.ypos,10)
                             stroke(255,0,0)
@@ -255,21 +251,24 @@ class vehicle(object):
                             circle(self.xpos,self.ypos,2*auditoryAware)
 
             # if doesn't spots this predator or isn't alarmed, checks for it's alarm
-            elif(alarm == 0):   
-                if(toggleAlarm == 1):
-                    alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
-
+            elif(alarm == 0 and toggleAlarm>0):
+                alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)
+        
                 # in case there's an alarm
-                if(alarm>0 and alarm!=checkhideout):
+                if(toggleAlarm == 1 and alarm>0 and alarm!=checkhideout):
                     self.fLevel = 600
                     safeTime[index] = [self.fLevel, alarm]
                     v, self.alpha = moveToRefuge(self,i,checkhideout,alarm)
+                elif(toggleAlarm == 2 and checkhideout<1 and alarm>0):
+                    self.fLevel = 600
+                    v,self.alpha,alarm = moveToNearestRefuge(self, lx, ly, hx, hy, px, py, alarm)
+                    safeTime[index] = [self.fLevel, alarm]
             
             if(self.stim[i].nextAlarm>0):
                 self.stim[i].nextAlarm -= 1
         
         # if agent is in refuge of a predator, it doesn't move
-        if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
+        if(checkhideout == alarm or (checkhideout>0 and alarm == 0 and hLevel<self.fLevel)):
             v = 0  
         elif(alarm == 0 and safeTime[index][0] > 50):    # vervets keeps moving till safetime becomes 0
             v = 2 * safeTime[index][0] / 1000
@@ -277,10 +276,6 @@ class vehicle(object):
             safeTime[index][0] -= safeTime[index][0]*.008 
         elif(safeTime[index][0] < 50):  # if fear level drops below 50 then update alarm status to zero
             safeTime[index][1] = 0
-
-        # calculate movement based on resource locations
-        if(hLevel > self.fLevel):
-            v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
@@ -291,9 +286,9 @@ class vehicle(object):
 
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
         if(v==0):
-            self.eLevel -= .001 * self.eLevel
+            self.eLevel -= .0005 * self.eLevel
         else:
-            self.eLevel -= (v + .001 * self.eLevel) # to be tuned later
+            self.eLevel -= (.5*v + .0005 * self.eLevel) # to be tuned later
 
         # to make vervets take a 180 degree turn as they hit boundary
         if self.xpos > .9*width:
@@ -333,6 +328,21 @@ def moveToRefuge(self,i,checkhideout,alarm):
         self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
     return v, self.alpha
 
+def moveToNearestRefuge(self, lx, ly, hx, hy, px, py, alarm):
+    v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
+    lrd = dist(self.xpos,self.ypos,lx,ly)   # leopard refuse distance
+    hrd = dist(self.xpos,self.ypos,hx,hy)
+    prd = dist(self.xpos,self.ypos,px,py)
+
+    if(lrd<hrd and lrd<prd):
+        return v,orientAlpha(lx,ly,self.xpos,self.ypos),1
+    elif(hrd<lrd and hrd<prd):
+        return v,orientAlpha(hx,hy,self.xpos,self.ypos),2
+    elif(prd<hrd and prd<lrd):
+        return v,orientAlpha(px,py,self.xpos,self.ypos),3
+    else:
+        return v,self.alpha,alarm
+
 
 # a function to respond to predator
 def moveToAvoid(self,i):
@@ -367,8 +377,6 @@ def moveToAvoid(self,i):
     self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
 
     return v, self.alpha
-    
-
 
 
 def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
