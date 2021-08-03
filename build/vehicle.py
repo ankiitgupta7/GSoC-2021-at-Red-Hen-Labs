@@ -38,18 +38,20 @@ class vehicle(object):
         self.patch = patch  # details about each resource patch in the environment
 
     def display(self, index):
-        # sets up vehicle color intensity as per net velocity
-
-        if(safeTime[index][1]==1 and safeTime[index][0]>10):
-            c = color(0,0,255*safeTime[index][0]/1000)
-        elif(safeTime[index][1]==2 and safeTime[index][0]>10):
-            c = color(0,255*safeTime[index][0]/1000,0)
-        elif(safeTime[index][1]==3 and safeTime[index][0]>10):
-            c = color(255*safeTime[index][0]/1000,0,0)   
+        colorGradient = 255*self.eLevel/1000            
+        if(self.eLevel > 1000):
+            colorGradient = 255        
+        c = color(int(colorGradient))  
+        if(self.fLevel > (1000 - self.eLevel)):
+            if(safeTime[index][1]==1):
+                c = color(0,0,int(colorGradient))
+            elif(safeTime[index][1]==2):
+                c = color(0,int(colorGradient),0)
+            elif(safeTime[index][1]==3):
+                c = color(int(colorGradient),0,0)   
         else:
-            c = color(int(255*self.eLevel/1000))            
-            if(self.eLevel > 1000):
-                c = color(255)
+            c = color(int(colorGradient))            
+
 
 
         stroke(c)
@@ -166,8 +168,8 @@ class vehicle(object):
         return self.xpos,self.ypos
 
     def move(self,r,fov,index,hideout,nAgents,toggleAlarm):
-        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, minProxim, first2See, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
-        v, v1, v2, a1, a2, alarm, minProxim = 0, 0, 0, 0, 0, 0, 1200
+        global v, safeTime, alarm, flag, lx, ly, hx, hy, px, py, first2See, lAlarms, hAlarms, pAlarms, _lAlarms, _hAlarms, _pAlarms
+        v, a1, a2, alarm = 0, 0, 0, 0
         lx, ly, hx, hy, px, py = hideout
 
         #setting up hunger level
@@ -176,26 +178,11 @@ class vehicle(object):
         # checking whether the agent is inside a refuge
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
-        # setting auditory awareness thresold of vervets to hear alarm calls
-        auditoryAware = 3*r
-
-        # acquiring instantaneous co-ordinates of sensors
-        s1x,s1y,s2x,s2y = self.sensorLocation()
-
-        # total number of stimuli/predators in the environment
-        m = len(self.stim)  
-
-        # processing each of m stimuli at a time
-        for i in range(m):
-            if(hLevel > self.fLevel):
-                break
+        # finding the closest predator in the environment to react to
+        i = closestPredator(self)
+        if(len(self.stim)>0):   # to check if there are more than one predator
             type = self.stim[i].type    # type of predator
-            hox,hoy = self.stim[i].hl  # corresponding hideout co-ordinates
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
-
-            # setting behavioural wiring based on type
-            if(type == "leopard" or type == "hawk" or type == "python"):
-                behav = "2a"
 
             # setting visual awareness radius for each vervet for different predator
             if(type == "leopard"):
@@ -205,133 +192,95 @@ class vehicle(object):
             elif(type == "python"):
                 awareRadius = r
 
+            # setting auditory awareness thresold of vervets to hear alarm calls
+            auditoryAware = 3*r
 
-
-            # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuse
+            # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuge
+            # i.e. to check if agent can visually spot the stimulus
             if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/PI,fov,x,y)):
-                proxim = dist(x,y,self.xpos,self.ypos)  # distance between agent and stimulus
-                
-                # to select the nearest stimuli to react to
-                if(minProxim>proxim):
-                    minProxim = proxim
-                else:
-                    continue    # to ensure a vervet react to only the nearest preadtor
-                
-                # decide on wiring weights based on vehicle type
-                if(behav == "1a" or behav == "1b"):
-                    w1,w2,w3,w4 = 1,1,1,1
-                elif(behav == "2a" or behav == "3a"):
-                    w1,w2,w3,w4 = 1,1,0,0           # parallel wiring
-                elif(behav == "2b" or behav == "3b"):
-                    w1,w2,w3,w4 = 0,0,1,1           # crossed wiring
-                else:
-                    w1,w2,w3,w4 = 0,0,0,0
-
-                # in case we want agent to be affected by multiple stimuli, we'll have a1 + = ...
-                # but as here the agent decides to react to the nearest stimuli, we don't have cumulative activation
-                a1 = tools.activation(x,y,s1x,s1y,behav)  # activation in 1st sensor due to ith stimulus
-                a2 = tools.activation(x,y,s2x,s2y,behav)  # activation in 2nd sensor due to ith stimulus
-                v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
-                v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
-
-                # TBD update fear level on visually spotting predator
+                v, self.alpha = moveToAvoid(self,i)
 
                 # getting alarmed about a predator (if agent is not in refuge) as it the vervet sees the predator
                 if(type == "leopard"):
                     if(checkhideout != 1):
                         alarm = 1
-                        self.fLevel = 600
+                        self.fLevel = 900
 
                 elif(type == "hawk"):
                     if(checkhideout != 2):
                         alarm = 2
-                        self.fLevel = 500
+                        self.fLevel = 800
 
                 elif(type == "python"):
                     if(checkhideout != 3):
                         alarm = 3
-                        self.fLevel = 400
+                        self.fLevel = 700
 
-                safeTime[index] = [self.fLevel,alarm]   # time window till vervets moves towards the hideout after being aware
+                safeTime[index] = [self.fLevel, alarm]   # time window till vervets moves towards the hideout after being aware
 
-                # orienting towards respective refuge if the vervets spots a predator
-                if(checkhideout != alarm and alarm!=0):
-                    self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
-
-                # a vervet giving Alarm Calls as it spots a predator, only if it's the first one to see the predator. Also at an interval.
+                # vervet giving Alarm Calls as it spots a predator, 
+                # only if it's the first one to see the predator. Also at an interval.
                 if(first2See[i]==0 and self.stim[i].nextAlarm == 0 and alarm>0):
                     temp = self.xpos,self.ypos,alarm,auditoryAware  
-                    if(alarm==1):
-                        lAlarms.append(temp)   # storing alarm call data to be used in next frame 
-                        # representing alarm calls visually in the environment
-                        fill(0,0,255)
-                        circle(self.xpos,self.ypos,10)
-                        stroke(0,0,255)
-                        noFill()
-                        circle(self.xpos,self.ypos,2*auditoryAware)
-                    elif(alarm==2):
-                        hAlarms.append(temp)
-                        fill(0,255,0)
-                        circle(self.xpos,self.ypos,10)
-                        stroke(0,255,0)
-                        noFill()
-                        circle(self.xpos,self.ypos,2*auditoryAware)
-                    elif(alarm==3):
-                        pAlarms.append(temp)
-                        fill(255,0,0)
-                        circle(self.xpos,self.ypos,10)
-                        stroke(255,0,0)
-                        noFill()
-                        circle(self.xpos,self.ypos,2*auditoryAware)
-
-                    
-
                     self.stim[i].nextAlarm = 100    # interval between two consecutive alarms
                     first2See[i] = 1    # as this vervet is first to see the predator
 
-            elif(alarm == 0):   # if doesn't spots this predator or isn't alarmed, checks for it's alarm
+                    if(alarm==1):
+                        lAlarms.append(temp)   # storing alarm call data to be used in next frame
+                        if(toggleAlarm == 1): 
+                            # representing alarm calls visually in the environment
+                            fill(0,0,255)
+                            circle(self.xpos,self.ypos,10)
+                            stroke(0,0,255)
+                            noFill()
+                            circle(self.xpos,self.ypos,2*auditoryAware)
+                    elif(alarm==2):
+                        hAlarms.append(temp)
+                        if(toggleAlarm == 1):
+                            fill(0,255,0)
+                            circle(self.xpos,self.ypos,10)
+                            stroke(0,255,0)
+                            noFill()
+                            circle(self.xpos,self.ypos,2*auditoryAware)
+                    elif(alarm==3):
+                        pAlarms.append(temp)
+                        if(toggleAlarm == 1):
+                            fill(255,0,0)
+                            circle(self.xpos,self.ypos,10)
+                            stroke(255,0,0)
+                            noFill()
+                            circle(self.xpos,self.ypos,2*auditoryAware)
+
+            # if doesn't spots this predator or isn't alarmed, checks for it's alarm
+            elif(alarm == 0):   
                 if(toggleAlarm == 1):
                     alarm = checkAlarmCall(self.xpos,self.ypos,_lAlarms, _hAlarms, _pAlarms,type)   ### toggle alarm call
 
-                # TBD: in case of multiple alarms chose closest
-                # TBD: update fear level on getting alarm call
-
+                # in case there's an alarm
                 if(alarm>0 and alarm!=checkhideout):
-                    # TBD fear level from recent alarm 
-                    self.fLevel = 500
+                    self.fLevel = 600
                     safeTime[index] = [self.fLevel, alarm]
-                    v1,v2 = 2 * safeTime[index][0] / 1000,2 * safeTime[index][0] / 1000 # updates velocity in case of alarm
-
-                if(checkhideout != alarm and alarm!=0):
-                    self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
+                    v, self.alpha = moveToRefuge(self,i,checkhideout,alarm)
             
-
             if(self.stim[i].nextAlarm>0):
                 self.stim[i].nextAlarm -= 1
-
-        # v1, v2, alarm, 
-        v = (v1 + v2) / 2 # net velocity of vehicle
-        self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
-
-        if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
-            v,v1,v2 = 0,0,0  
         
-        elif(alarm == 0 and safeTime[index][0] > 10):    # vervets keeps moving till safetime becomes 0
+        # if agent is in refuge of a predator, it doesn't move
+        if(checkhideout == alarm or (checkhideout>0 and alarm == 0)):
+            v = 0  
+        elif(alarm == 0 and safeTime[index][0] > 50):    # vervets keeps moving till safetime becomes 0
             v = 2 * safeTime[index][0] / 1000
-            safeTime[index][0] -= safeTime[index][0]*.008 # TBD fear level on visually spotting predator recently
-        elif(safeTime[index][0] < 10):
-            self.fLevel = 0
-            alarm = 0
+            # fear level keeps decreasing by .8% per frame after being recently alarmed, if not further alarmed
+            safeTime[index][0] -= safeTime[index][0]*.008 
+        elif(safeTime[index][0] < 50):  # if fear level drops below 50 then update alarm status to zero
+            safeTime[index][1] = 0
 
         # calculate movement based on resource locations
         if(hLevel > self.fLevel):
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
 
-
-
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
-
 
         # updating the new position as vehicle moves
         self.xpos = self.xpos + vx
@@ -359,6 +308,65 @@ class vehicle(object):
             # use alarm lists of this frame for next frame
             _lAlarms, _hAlarms, _pAlarms = lAlarms, hAlarms, pAlarms
             lAlarms, hAlarms, pAlarms = [], [], []
+
+# returns the index of closest predator to an agent
+def closestPredator(self):
+    m = len(self.stim)
+    closest = 0
+    closestDist = 5000
+    for i in range(m):
+        x,y = self.stim[i].location()    # acquiring location of ith stimulus
+        if(dist(x,y,self.xpos,self.ypos)<closestDist):
+            closestDist = dist(x,y,self.xpos,self.ypos)
+            closest = i
+    return closest            
+
+# a funtion to orient towards refuge when the agent is alarmed
+def moveToRefuge(self,i,checkhideout,alarm):
+    hox,hoy = self.stim[i].hl  # corresponding hideout co-ordinates
+    v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
+
+    if(checkhideout != alarm and alarm!=0):
+        self.alpha = orientAlpha(hox,hoy,self.xpos,self.ypos)
+    return v, self.alpha
+
+
+# a function to respond to predator
+def moveToAvoid(self,i):
+    x,y = self.stim[i].location()    # acquiring location of ith stimulus
+
+    # acquiring instantaneous co-ordinates of sensors
+    s1x,s1y,s2x,s2y = self.sensorLocation()
+    type = self.stim[i].type    # type of predator
+
+    # setting behavioural wiring based on type
+    if(type == "leopard" or type == "hawk" or type == "python"):
+        behav = "2a"
+
+    # decide on wiring weights based on vehicle type
+    if(behav == "1a" or behav == "1b"):
+        w1,w2,w3,w4 = 1,1,1,1
+    elif(behav == "2a" or behav == "3a"):
+        w1,w2,w3,w4 = 1,1,0,0           # parallel wiring
+    elif(behav == "2b" or behav == "3b"):
+        w1,w2,w3,w4 = 0,0,1,1           # crossed wiring
+    else:
+        w1,w2,w3,w4 = 0,0,0,0
+
+    # in case we want agent to be affected by multiple stimuli, we'll have a1 + = ...
+    # but as here the agent decides to react to the nearest stimuli, we don't have cumulative activation
+    a1 = tools.activation(x,y,s1x,s1y,behav)  # activation in 1st sensor due to ith stimulus
+    a2 = tools.activation(x,y,s2x,s2y,behav)  # activation in 2nd sensor due to ith stimulus
+    v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
+    v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
+    
+    v = (v1 + v2) / 2 # net velocity of vehicle
+    self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
+
+    return v, self.alpha
+    
+
+
 
 def checkAlarmCall(x,y,lAlarms,hAlarms,pAlarms,type):
     # TBD which alarm to consider finally

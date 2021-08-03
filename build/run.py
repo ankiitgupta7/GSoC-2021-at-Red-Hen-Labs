@@ -103,10 +103,10 @@ def draw():
         scale.setPosition(.9*width,430).setSize(80,15).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(80,15).setRange(10, 100).setValue(40).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,460).setSize(80,15).setRange(10, 100).setValue(60).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(80,15).setRange(0, 360).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,490).setSize(80,15).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         
@@ -178,7 +178,7 @@ def draw():
         eLevel = 500 # assigning initial energy level to be 50% of maximum eLevel = 1000
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 0, patch))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 50, patch))
 
         start = 1
 
