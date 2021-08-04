@@ -21,7 +21,7 @@ _hAlarms = []
 _pAlarms = []
 
 class vehicle(object):
-    def __init__(self, xpos, ypos, z, stim, alpha, eLevel, fLevel, patch):
+    def __init__(self, xpos, ypos, z, stim, alpha, eLevel, fLevel, rfd, patch):
         # co-ordinates of the agent
         self.xpos = xpos
         self.ypos = ypos
@@ -30,6 +30,7 @@ class vehicle(object):
         self.alpha = alpha # vehicle's orienation angle wrt +ve x-axis
         self.eLevel = eLevel # energy level of the agent
         self.fLevel = fLevel # fear level of the agent
+        self.rfd = rfd # ready for death parameter after being predated
         self.patch = patch  # details about each resource patch in the environment
 
     def display(self, index, population,safeTime):
@@ -173,13 +174,23 @@ class vehicle(object):
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
         # finding the closest predator in the environment to react to
-        i = closestPredator(self)
-        
+        i, proxim = closestPredator(self)
+
+        # check if predator is very close to agent
+        # check if there was no recent kill by this predator
+        # probability of predation success in this attempt = 80%
+        if(proxim<20 and self.stim[i].lastKill>300 and random.uniform(0,1)>.2):    # conditions for predation
+            self.rfd = 1    # the agent is ready for death with a 80% probability!
+            self.stim[i].lastKill = 0
+
         # calculate movement based on resource locations
         if(hLevel > self.fLevel):
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
 
-        elif(len(self.stim)>0 and hLevel < self.fLevel):   # to check if there are more than one predator
+        # check if there are more than one predator
+        # check if fear level is more than hunger level
+        # check if there was no recent kill by this predator
+        elif(len(self.stim)>0 and hLevel < self.fLevel and self.stim[i].lastKill>50):  
             type = self.stim[i].type    # type of predator
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
 
@@ -317,7 +328,7 @@ def closestPredator(self):
         if(dist(x,y,self.xpos,self.ypos)<closestDist):
             closestDist = dist(x,y,self.xpos,self.ypos)
             closest = i
-    return closest            
+    return closest, closestDist           
 
 # a funtion to orient towards refuge when the agent is alarmed
 def moveToRefuge(self,i,checkhideout,alarm):

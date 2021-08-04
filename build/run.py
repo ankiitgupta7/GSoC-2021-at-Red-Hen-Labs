@@ -140,24 +140,24 @@ def draw():
 
         for i in range(n1):
             if(flag==0):    # 0: moving, 1: fixed
-                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0))
+                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000))
             elif(flag==1):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0)) # lh: leopard hideout
+                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0, 1000)) # lh: leopard hideout
 
 
         for i in range(n2):
             if(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0))
+                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000))
             elif(flag==1):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0))
+                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0, 1000))
 
 
 
         for i in range(n3):
             if(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0))
+                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000))
             elif(flag==1):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0))
+                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0, 1000))
 
 
 # creating resource patches in the environment
@@ -182,7 +182,7 @@ def draw():
         eLevel = 500 # assigning initial energy level to be 50% of maximum eLevel = 1000
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 50, patch))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 50, 0, patch))
 
         start = 1
 
@@ -234,6 +234,7 @@ def draw():
             # processing display and movement of stimulus
             stim[i].display()
             stim[i].move()
+        #    print(i,stim[i].lastKill)
 
         for i in range(len(patch)):
             # display each resource patch
@@ -242,7 +243,7 @@ def draw():
         i = 0
         while(i<len(objs)):
             # processing display and movement of stimulus
-            if(objs[i].eLevel<10):
+            if(objs[i].eLevel<10 or objs[i].rfd == 1):
                 del objs[i]
                 i -= 1
             else:
