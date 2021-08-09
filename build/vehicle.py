@@ -51,6 +51,7 @@ class vehicle(object):
         self.displayW1()
         self.displayW2()
         self.displaySensors()
+        noStroke()
         fill(0)
         text(population,10,635)
         text("Agents Alive",35,635)
@@ -182,6 +183,8 @@ class vehicle(object):
         if(proxim<20 and self.stim[i].lastKill>300 and random.uniform(0,1)>.2):    # conditions for predation
             self.rfd = 1    # the agent is ready for death with a 80% probability!
             self.stim[i].lastKill = 0
+            fill(0)
+            circle(self.xpos,self.ypos,25)
 
         # calculate movement based on resource locations
         if(hLevel > self.fLevel):

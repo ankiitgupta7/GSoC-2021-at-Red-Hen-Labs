@@ -3,3 +3,5 @@
 * safetime not activated when agent is in hideout.
 * predators appearing in their refuge at start
 * agents escaping environment never to come back
+* some agents mysteriously develop show fear suddenly after foraging
+* agents show signs of foraging even when hunger < fear TBV

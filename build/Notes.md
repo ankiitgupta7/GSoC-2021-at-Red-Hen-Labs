@@ -1,7 +1,7 @@
 * While there is no location in the vervets’ habitat where they can seek effective shelter from all three predator types, they seek out bushes to conceal themselves from hawks, trees to escape from leopards, and stoney ground to stay safe from snakes.
 * Steering Behaviors For Autonomous Characters background and update by Craig Reynolds: http://www.red3d.com/cwr/steer/
 * Schiffman's Video on 5.3 Flee, Pursue, Evade - The Nature of Code: https://www.youtube.com/watch?v=Q4MU7pkDYmQ
-
+* https://en.wikipedia.org/wiki/Lotka%E2%80%93Volterra_equations
  '''
                 if(first2See[i]==0 and alarmGap[i] == 0):
                     giveAlarm(self.xpos,self.ypos,alarm,awareRadius)
