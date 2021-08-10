@@ -175,13 +175,20 @@ class vehicle(object):
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
         # finding the closest predator in the environment to react to
-        i, proxim = closestPredator(self)
+        i, proxim = closestPredator(self)  
 
         # check if predator is very close to agent
         # check if there was no recent kill by this predator
         # probability of predation success in this attempt = 80%
         if(proxim<20 and self.stim[i].lastKill>300 and random.uniform(0,1)>.2):    # conditions for predation
-            self.rfd = 1    # the agent is ready for death with a 80% probability!
+            # the agent is ready for death with a 80% probability!
+            if(self.stim[i].type == "leopard"):
+                self.rfd = [1,1]
+            elif(self.stim[i].type == "hawk"):
+                self.rfd = [1,2]    # 1 refers to death cnf, while 2 refers to death by 2nd predator, i.e., hawk
+            elif(self.stim[i].type == "python"):
+                self.rfd = [1,3]
+
             self.stim[i].lastKill = 0
             fill(0)
             circle(self.xpos,self.ypos,25)
@@ -193,7 +200,7 @@ class vehicle(object):
         # check if there are more than one predator
         # check if fear level is more than hunger level
         # check if there was no recent kill by this predator
-        elif(len(self.stim)>0 and hLevel < self.fLevel and self.stim[i].lastKill>50):  
+        elif(len(self.stim)>0 and hLevel < self.fLevel and self.stim[i].lastKill>50):
             type = self.stim[i].type    # type of predator
             x,y = self.stim[i].location()    # acquiring location of ith stimulus
 

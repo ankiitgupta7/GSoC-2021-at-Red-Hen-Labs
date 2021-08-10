@@ -30,15 +30,12 @@ def setup():
 
 
 def draw():
-    global cp5  
-    global start
-    global stim, objs, patch
-    global n
-    global d
-    global r
-    global fov, toggleAlarm, safeTime
+    global cp5, n, d, r, stim, objs, patch, start
+    global fov, toggleAlarm, safeTime, startOfSim
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
-
+    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath
+    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath
+    global sDeath, prDeath, lDeath, hDeath, pDeath
 
     if(frameCount == 1):
         background('#004477')
@@ -132,8 +129,22 @@ def draw():
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
         toggleAlarm = int(cp5.getController("Toggle Alarms").getValue())
+        if(toggleAlarm==0):
+            starveDeath = createWriter("./data/starveDeath.csv")   # to write the output file
+            predationDeath = createWriter("./data/predationDeath.csv")   # to write the output file
+            leopardDeath = createWriter("./data/leopardDeath.csv")   # to write the output file
+            hawkDeath = createWriter("./data/hawkDeath.csv")   # to write the output file
+            pythonDeath = createWriter("./data/pythonDeath.csv")   # to write the output file
+            totalDeath = createWriter("./data/totalDeath.csv")   # to write the output file
+        elif(toggleAlarm==1):
+            _starveDeath = createWriter("./data/_starveDeath.csv")   # to write the output file
+            _predationDeath = createWriter("./data/_predationDeath.csv")   # to write the output file
+            _leopardDeath = createWriter("./data/_leopardDeath.csv")   # to write the output file
+            _hawkDeath = createWriter("./data/_hawkDeath.csv")   # to write the output file
+            _pythonDeath = createWriter("./data/_pythonDeath.csv")   # to write the output file
+            _totalDeath = createWriter("./data/_totalDeath.csv")   # to write the output file
 
-
+        sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
         for i in range(n):
             safeTime.append([0,0]) # first value is safeTime value, second is alarm type
@@ -182,9 +193,11 @@ def draw():
         eLevel = 500 # assigning initial energy level to be 50% of maximum eLevel = 1000
         for i in range(n):
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 50, 0, patch))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 50, [0,0], patch))
 
         start = 1
+        startOfSim = frameCount
+        saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag)
 
     if(start==1):
         bc = color(0,100,100)
@@ -243,13 +256,130 @@ def draw():
         i = 0
         while(i<len(objs)):
             # processing display and movement of stimulus
-            if(objs[i].eLevel<10 or objs[i].rfd == 1):
+            if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
+                if(toggleAlarm==0):
+                    sDeath += 1
+                    logData(starveDeath,startOfSim,sDeath)
+                elif(toggleAlarm==1):
+                    sDeath += 1
+                    logData(_starveDeath,startOfSim,sDeath)
+
+                del objs[i]
+                i -= 1
+
+            elif(objs[i].rfd[0] == 1 and len(objs)>1): # death by predation
+            #    print(objs[i].rfd,objs[i].rfd[0], objs[i].rfd[1])
+                if(toggleAlarm==0 and objs[i].rfd[1]==1):
+                    lDeath += 1
+                    logData(leopardDeath,startOfSim,lDeath)
+                elif(toggleAlarm==1 and objs[i].rfd[1]==1):
+                    lDeath += 1
+                    logData(_leopardDeath,startOfSim,lDeath)
+
+                if(toggleAlarm==0 and objs[i].rfd[1]==2):
+                    hDeath += 1
+                    logData(hawkDeath,startOfSim,hDeath)
+                elif(toggleAlarm==1 and objs[i].rfd[1]==2):
+                    hDeath += 1
+                    logData(_hawkDeath,startOfSim,hDeath)
+
+                if(toggleAlarm==0 and objs[i].rfd[1]==3):
+                    pDeath += 1
+                    logData(pythonDeath,startOfSim,pDeath)
+                elif(toggleAlarm==1 and objs[i].rfd[1]==3):
+                    pDeath += 1
+                    logData(_pythonDeath,startOfSim,pDeath)
+
+                if(toggleAlarm==0):
+                    prDeath += 1
+                    logData(predationDeath,startOfSim,prDeath)
+                elif(toggleAlarm==1):
+                    prDeath += 1
+                    logData(_predationDeath,startOfSim,prDeath)
+
                 del objs[i]
                 i -= 1
             else:
                 objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime)  
                 objs[i].display(i,len(objs),safeTime)
             i += 1
+
+        if(toggleAlarm==0):
+            logData(totalDeath, startOfSim, n-len(objs))
+        elif(toggleAlarm==1):
+            logData(_totalDeath, startOfSim, n-len(objs))
+
+        if(len(objs)<.5*n and toggleAlarm == 0):
+            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath)
+        elif(len(objs)<.5*n and toggleAlarm == 1):
+            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath)
+
+def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag):
+    simParam = createWriter("./data/simParameters.txt")
+    simParam.print("Total number of Vervets = ")
+    simParam.print(n)
+    simParam.print("\n")
+    simParam.print("Total number of Predators = ")
+    simParam.print(n1+n2+n3)
+    simParam.print("\n") 
+    simParam.print("Total number of Leopards = ")
+    simParam.print(n1)
+    simParam.print("\n") 
+    simParam.print("Total number of Hawks = ")
+    simParam.print(n2)
+    simParam.print("\n") 
+    simParam.print("Total number of Pythons = ")
+    simParam.print(n3)
+    simParam.print("\n")
+    simParam.print("The distance factor perceptible to Vervets = ")
+    simParam.print(r)
+    simParam.print("\n")
+    simParam.print("Frontal Field of view of Vervets (in degrees) = ")
+    simParam.print(fov)
+    simParam.print("\n")
+    simParam.print("Number of grids resource area to be divided into = ")
+    simParam.print(k*k)
+    simParam.print("\n")
+    simParam.print("Density factor of resource grids = ")
+    simParam.print(patchDensity)
+    simParam.print("\n")
+    simParam.print("Scale of Agent representation = ")
+    simParam.print(d)
+    simParam.print("\n")
+    simParam.print("Movement of predators = ")
+    if(flag==0):
+        simParam.print("Moving")
+    else:
+        simParam.print("Fixed")
+
+    simParam.print("\n")
+    simParam.flush()
+    simParam.close()
+
+
+
+    
+
+def closeOutputFiles(f1,f2,f3,f4,f5,f6):
+    f1.flush()  # Writes the remaining data to the file
+    f1.close()  # Finishes the file
+    f2.flush()
+    f2.close()
+    f3.flush()
+    f3.close()
+    f4.flush()
+    f4.close()
+    f5.flush()
+    f5.close()
+    f6.flush()
+    f6.close()
+
+
+def logData(output, startOfSim, data):
+    output.print(frameCount-startOfSim+1)
+    output.print(",")
+    output.print(data) # Write the datum to the file
+    output.print("\n") 
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()

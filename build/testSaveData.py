@@ -1,6 +1,6 @@
 import random
 # Create a file in the sketch directory
-output = createWriter("testData.csv")
+output = createWriter("./data/testData.csv")
 numbers = []
 for i in range(1000):
     numbers.append(random.uniform(0,1))
