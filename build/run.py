@@ -33,8 +33,8 @@ def draw():
     global cp5, n, d, r, stim, objs, patch, start
     global fov, toggleAlarm, safeTime, startOfSim
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
-    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath
-    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath
+    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy
+    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
 
     if(frameCount == 1):
@@ -136,6 +136,9 @@ def draw():
             hawkDeath = createWriter("./data/hawkDeath.csv")   # to write the output file
             pythonDeath = createWriter("./data/pythonDeath.csv")   # to write the output file
             totalDeath = createWriter("./data/totalDeath.csv")   # to write the output file
+            avgFear = createWriter("./data/avgFear.csv")   # to write the output file
+            avgHunger = createWriter("./data/avgHunger.csv")   # to write the output file
+            avgEnergy = createWriter("./data/avgEnergy.csv")   # to write the output file
         elif(toggleAlarm==1):
             _starveDeath = createWriter("./data/_starveDeath.csv")   # to write the output file
             _predationDeath = createWriter("./data/_predationDeath.csv")   # to write the output file
@@ -143,6 +146,9 @@ def draw():
             _hawkDeath = createWriter("./data/_hawkDeath.csv")   # to write the output file
             _pythonDeath = createWriter("./data/_pythonDeath.csv")   # to write the output file
             _totalDeath = createWriter("./data/_totalDeath.csv")   # to write the output file
+            _avgFear = createWriter("./data/_avgFear.csv")   # to write the output file
+            _avgHunger = createWriter("./data/_avgHunger.csv")   # to write the output file
+            _avgEnergy = createWriter("./data/_avgEnergy.csv")   # to write the output file
 
         sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
@@ -255,6 +261,9 @@ def draw():
             patch[i].display()
 
         i = 0
+        totalFear = 0
+        totalHunger = 0
+        totalEnergy = 0
         while(i<len(objs)):
             # processing display and movement of stimulus
             if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
@@ -304,6 +313,9 @@ def draw():
             else:
                 objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime)  
                 objs[i].display(i,len(objs),safeTime)
+                totalFear += objs[i].fLevel
+                totalHunger += (1000 - objs[i].eLevel)
+                totalEnergy += objs[i].eLevel
             i += 1
 
         # represeting death
@@ -323,16 +335,34 @@ def draw():
             x += 1
 
 
-
+        # to log total cumulative death per frame
         if(toggleAlarm==0):
             logData(totalDeath, startOfSim, n-len(objs))
+            logData(avgFear, startOfSim, totalFear/len(objs))
+            logData(avgHunger, startOfSim, totalHunger/len(objs))
+            logData(avgEnergy, startOfSim, totalEnergy/len(objs))
         elif(toggleAlarm==1):
             logData(_totalDeath, startOfSim, n-len(objs))
+            logData(_avgFear, startOfSim, totalFear/len(objs))
+            logData(_avgHunger, startOfSim, totalHunger/len(objs))
+            logData(_avgEnergy, startOfSim, totalEnergy/len(objs))
 
         if(len(objs)<.5*n and toggleAlarm == 0):
-            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath)
+            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy)
         elif(len(objs)<.5*n and toggleAlarm == 1):
-            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath)
+            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy)
+
+def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
+    x0 = list()
+    y0 = list()
+    rLevel = list()
+    x1, x2 = xRange
+    y1, y2 = yRange
+    for i in range(2*n):
+        x0.append(random.uniform(x1, x2))
+        y0.append(random.uniform(y1, y2))
+        rLevel.append(random.uniform(55,255))
+    return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
 
 def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag):
     simParam = createWriter("./data/simParameters.txt")
@@ -374,13 +404,15 @@ def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag):
 
     simParam.print("\n")
     simParam.flush()
-    simParam.close()
+    simParam.close()    
 
+def logData(output, startOfSim, data):
+    output.print(frameCount-startOfSim+1)
+    output.print(",")
+    output.print(data) # Write the datum to the file
+    output.print("\n") 
 
-
-    
-
-def closeOutputFiles(f1,f2,f3,f4,f5,f6):
+def closeOutputFiles(f1,f2,f3,f4,f5,f6,f7,f8,f9):
     f1.flush()  # Writes the remaining data to the file
     f1.close()  # Finishes the file
     f2.flush()
@@ -393,22 +425,9 @@ def closeOutputFiles(f1,f2,f3,f4,f5,f6):
     f5.close()
     f6.flush()
     f6.close()
-
-
-def logData(output, startOfSim, data):
-    output.print(frameCount-startOfSim+1)
-    output.print(",")
-    output.print(data) # Write the datum to the file
-    output.print("\n") 
-
-def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
-    x0 = list()
-    y0 = list()
-    rLevel = list()
-    x1, x2 = xRange
-    y1, y2 = yRange
-    for i in range(2*n):
-        x0.append(random.uniform(x1, x2))
-        y0.append(random.uniform(y1, y2))
-        rLevel.append(random.uniform(55,255))
-    return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
+    f7.flush()
+    f7.close()
+    f8.flush()
+    f8.close()
+    f9.flush()
+    f9.close()
