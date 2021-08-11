@@ -35,7 +35,7 @@ def draw():
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
     global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath
     global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath
-    global sDeath, prDeath, lDeath, hDeath, pDeath
+    global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
 
     if(frameCount == 1):
         background('#004477')
@@ -198,6 +198,7 @@ def draw():
         start = 1
         startOfSim = frameCount
         saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag)
+        deathLocation = []
 
     if(start==1):
         bc = color(0,100,100)
@@ -257,6 +258,7 @@ def draw():
         while(i<len(objs)):
             # processing display and movement of stimulus
             if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
+                deathLocation.append([objs[i].xpos,objs[i].ypos,0,1])
                 if(toggleAlarm==0):
                     sDeath += 1
                     logData(starveDeath,startOfSim,sDeath)
@@ -268,7 +270,7 @@ def draw():
                 i -= 1
 
             elif(objs[i].rfd[0] == 1 and len(objs)>1): # death by predation
-            #    print(objs[i].rfd,objs[i].rfd[0], objs[i].rfd[1])
+                deathLocation.append([objs[i].xpos,objs[i].ypos,0,2])
                 if(toggleAlarm==0 and objs[i].rfd[1]==1):
                     lDeath += 1
                     logData(leopardDeath,startOfSim,lDeath)
@@ -303,6 +305,24 @@ def draw():
                 objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime)  
                 objs[i].display(i,len(objs),safeTime)
             i += 1
+
+        # represeting death
+        x = 0
+        while(x<len(deathLocation)):      
+            if(deathLocation[x][2]<20):    # represents recent death for 10 frames
+                deathLocation[x][2] += 1
+                if(deathLocation[x][3]==1):    # death by starvation
+                    fill(0)
+                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20)
+                elif(deathLocation[x][3]==2):  # death by predation
+                    fill(0)
+                    circle(deathLocation[x][0],deathLocation[x][1],20)
+            else:
+                del deathLocation[x]
+                x -= 1
+            x += 1
+
+
 
         if(toggleAlarm==0):
             logData(totalDeath, startOfSim, n-len(objs))

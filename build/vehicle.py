@@ -190,8 +190,6 @@ class vehicle(object):
                 self.rfd = [1,3]
 
             self.stim[i].lastKill = 0
-            fill(0)
-            circle(self.xpos,self.ypos,25)
 
         # calculate movement based on resource locations
         if(hLevel > self.fLevel):
