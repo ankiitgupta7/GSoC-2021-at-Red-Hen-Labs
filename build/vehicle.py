@@ -179,8 +179,9 @@ class vehicle(object):
 
         # check if predator is very close to agent
         # check if there was no recent kill by this predator
+        # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(proxim<20 and self.stim[i].lastKill>300 and random.uniform(0,1)>.2):    # conditions for predation
+        if(proxim<20 and self.stim[i].lastKill>300 and self.stim[i].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[i].type == "leopard"):
                 self.rfd = [1,1]

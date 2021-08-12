@@ -1,7 +1,7 @@
 import math
 import random
 class stimulus(object):
-    def __init__(self, img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill):
+    def __init__(self, img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel):
         self.xspeed = xspeed    # horizontal velocity
         self.yspeed = yspeed    # vertical velocity
         # position of stimulus: (x,y)
@@ -12,6 +12,7 @@ class stimulus(object):
         self.hl = hl # corresponding hideout location
         self.nextAlarm = nextAlarm # gives information about no. of frames after which an alarm is given for this predator if it remains visible
         self.lastKill = lastKill
+        self.eLevel = eLevel
         
     # to display stimulus
     def display(self):
@@ -23,10 +24,14 @@ class stimulus(object):
         return self.x,self.y
     # takes care of vehicle movement
     def move(self):
-        self.lastKill += 1
         hx,hy = self.hl
         hd = dist(self.x,self.y,hx,hy)  # distance from hideout
+        v = math.sqrt(self.xspeed**2+self.yspeed**2)
         
+        # to update eLevel in case of successfull kill
+        if(self.lastKill == 5): # energy refill after 5 frames of kill
+            self.eLevel += 1000
+
        # to make the stimuli rebound from boundaries
         if self.x > .9*width or self.x <=0:
             self.xspeed *= -1
@@ -38,6 +43,15 @@ class stimulus(object):
 
         self.x = self.x + self.xspeed
         self.y = self.y + self.yspeed
+        
+        # time elapsed after last kill
+        self.lastKill += 1
+
+        # energy decay per frame
+        if(v==0):
+            self.eLevel -= .0005 * self.eLevel
+        else:
+            self.eLevel -= (.5*v + .0005 * self.eLevel) # to be tuned later
  
 
 

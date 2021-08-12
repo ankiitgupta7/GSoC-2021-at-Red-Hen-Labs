@@ -61,9 +61,9 @@ def draw():
             
         cp5 = ControlP5(this)   
 
-        option = "Moving","Fixed"
-        cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
-        cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
+        #option = "Moving","Fixed"
+        #cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
+        #cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
         
         textSize(10)
@@ -120,7 +120,6 @@ def draw():
 
     if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>550 and mouseY<570:
         stim = list()  # creating an array of stimulus
-        flag = int(cp5.getController("Opt for Stimuli Motion").getValue())
         n1 = int(cp5.getController("leopard").getValue())
         n2 = int(cp5.getController("hawk").getValue())
         n3 = int(cp5.getController("python").getValue())
@@ -154,27 +153,16 @@ def draw():
         safeTime = []
         for i in range(n):
             safeTime.append([0,0]) # first value is safeTime value, second is alarm type
-
+            
         for i in range(n1):
-            if(flag==0):    # 0: moving, 1: fixed
-                stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000))
-            elif(flag==1):
-                stim.append(stimulus.stimulus(img1, 'leopard', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, lh, 0, 1000)) # lh: leopard hideout
-
+            # img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
+            stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard hideout
 
         for i in range(n2):
-            if(flag==0):
-                stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000))
-            elif(flag==1):
-                stim.append(stimulus.stimulus(img2, 'hawk', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, hh, 0, 1000))
-
-
+            stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
 
         for i in range(n3):
-            if(flag==0):
-                stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000))
-            elif(flag==1):
-                stim.append(stimulus.stimulus(img3, 'python', random.uniform(0,.9*width), random.uniform(0,D), 0, 0, ph, 0, 1000))
+            stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
 
 
 # creating resource patches in the environment
@@ -203,7 +191,7 @@ def draw():
 
         start = 1
         startOfSim = frameCount
-        saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag)
+        saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d)
         deathLocation = []
 
     if(start==1):
@@ -249,17 +237,24 @@ def draw():
         fill(0,0,255)
         text("Blue: Leopard", .9*width + 5, 635)
 
+        # processing predators
+        i=0
+        while(i<len(stim)):
+            print(frameCount, stim[i].eLevel, stim[i].type)
+            if(stim[i].eLevel<100 and len(stim)>0):  # death by starvation
+                del stim[i]
+                i -= 1
+            else:
+                stim[i].move()  
+                stim[i].display()
+            i += 1
 
-        for i in range(len(stim)):
-            # processing display and movement of stimulus
-            stim[i].display()
-            stim[i].move()
-        #    print(i,stim[i].lastKill)
-
+        # processing patches
         for i in range(len(patch)):
             # display each resource patch
             patch[i].display()
 
+        # processing vervets
         i = 0
         totalFear = 0
         totalHunger = 0
@@ -364,7 +359,7 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
         rLevel.append(random.uniform(55,255))
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
 
-def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag):
+def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d):
     simParam = createWriter("./data/simParameters.txt")
     simParam.print("Total number of Vervets = ")
     simParam.print(n)
@@ -396,11 +391,6 @@ def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d, flag):
     simParam.print("Scale of Agent representation = ")
     simParam.print(d)
     simParam.print("\n")
-    simParam.print("Movement of predators = ")
-    if(flag==0):
-        simParam.print("Moving")
-    else:
-        simParam.print("Fixed")
 
     simParam.print("\n")
     simParam.flush()
