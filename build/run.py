@@ -31,7 +31,7 @@ def setup():
 
 def draw():
     global cp5, n, d, r, stim, objs, patch, start
-    global fov, toggleAlarm, safeTime, startOfSim
+    global fov, toggleAlarm, safeTime, startOfSim, agentPopGrowth
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
     global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy
     global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy
@@ -65,6 +65,8 @@ def draw():
         #cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
         #cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
+        pToggle = cp5.addSlider("Agent Reproduction")
+        pToggle.setPosition(.9*width,10).setSize(30,10).setRange(0, 1).setValue(0).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
         
         textSize(10)
         text("Choose No. of Stimulus", .9*width, 60)
@@ -128,6 +130,7 @@ def draw():
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
         toggleAlarm = int(cp5.getController("Toggle Alarms").getValue())
+        agentPopGrowth = int(cp5.getController("Agent Reproduction").getValue())
         if(toggleAlarm==0):
             starveDeath = createWriter("./data/starveDeath.csv")   # to write the output file
             predationDeath = createWriter("./data/predationDeath.csv")   # to write the output file
@@ -151,7 +154,7 @@ def draw():
 
         sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
-        for i in range(n):
+        for i in range(10*n):   # if agent population crosses 10*n, an error would pop
             safeTime.append([0,0]) # first value is safeTime value, second is alarm type
             
         for i in range(n1):
@@ -240,7 +243,6 @@ def draw():
         # processing predators
         i=0
         while(i<len(stim)):
-            print(frameCount, stim[i].eLevel, stim[i].type)
             if(stim[i].eLevel<100 and len(stim)>0):  # death by starvation
                 del stim[i]
                 i -= 1
@@ -313,10 +315,16 @@ def draw():
                 totalEnergy += objs[i].eLevel
             i += 1
 
+        # modeling agent reproduction
+        if((frameCount-startOfSim+1)%100==0 and agentPopGrowth==1): # add eLevel condn  
+            for i in range(int(.01*len(objs))+1):
+                alpha = 2 * math.pi * random.uniform(0,1)
+                objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, 500, 50, [0,0], patch))
+
         # represeting death
         x = 0
         while(x<len(deathLocation)):      
-            if(deathLocation[x][2]<20):    # represents recent death for 10 frames
+            if(deathLocation[x][2]<20):    # represents recent death for 20 frames
                 deathLocation[x][2] += 1
                 if(deathLocation[x][3]==1):    # death by starvation
                     fill(0)
@@ -342,10 +350,14 @@ def draw():
             logData(_avgHunger, startOfSim, totalHunger/len(objs))
             logData(_avgEnergy, startOfSim, totalEnergy/len(objs))
 
-        if(len(objs)<.5*n and toggleAlarm == 0):
+        if((frameCount-startOfSim+1) == 5000 and toggleAlarm == 0):
             closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy)
-        elif(len(objs)<.5*n and toggleAlarm == 1):
+            #exit()
+            print("Data has been saved for 5000 frames.")
+        elif((frameCount-startOfSim+1 == 5000) and toggleAlarm == 1):
             closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy)
+            #exit()
+            print("Data has been saved for 5000 frames.")
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
