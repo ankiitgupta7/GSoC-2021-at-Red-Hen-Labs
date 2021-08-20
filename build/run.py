@@ -86,8 +86,8 @@ def draw():
         aToggle.setPosition(.9*width,250).setSize(40,15).setRange(0, 2).setValue(1).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
-        pFactor = cp5.addSlider("Patch Factor")
-        pFactor.setPosition(.9*width,300).setSize(60,15).setRange(2, 20).setValue(12).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        pRatio = cp5.addSlider("Patch Ratio")
+        pRatio.setPosition(.9*width,300).setSize(60,15).setRange(2, 20).setValue(12).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         pDensity = cp5.addSlider("Patch Density")
@@ -170,7 +170,7 @@ def draw():
 
 # creating resource patches in the environment
         patch = list() 
-        k = int(cp5.getController("Patch Factor").getValue())   # number of patches decider, no. of times width/height to be divided
+        k = int(cp5.getController("Patch Ratio").getValue())   # number of patches decider, no. of times width/height to be divided
         patchDensity = cp5.getController("Patch Density").getValue()   # how dense (0,1) the resource point are going to be
         tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
         tempY = D/k
