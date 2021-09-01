@@ -99,7 +99,7 @@ def draw():
 
         
         scale = cp5.addSlider("scale")
-        scale.setPosition(.9*width,430).setSize(80,15).setRange(1, 10).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        scale.setPosition(.9*width,430).setSize(80,15).setRange(5, 50).setValue(10).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
         fov_dist.setPosition(.9*width,460).setSize(80,15).setRange(10, 100).setValue(60).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
