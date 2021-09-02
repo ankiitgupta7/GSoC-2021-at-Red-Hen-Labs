@@ -67,8 +67,8 @@ class vehicle(object):
         circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), sc/4)    #eye1
         circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), sc/4)    #eye2
         noStroke()
-        circle(self.xpos + 2.1 * sc * math.cos(dispAngle - math.pi/6), self.ypos + 2.1 * sc * math.sin(dispAngle - math.pi/6), sc/2)  # ear1
-        circle(self.xpos + 2.1 * sc * math.cos(dispAngle + math.pi/2), self.ypos + 2.1 * sc * math.sin(dispAngle + math.pi/2), sc/2)  #ear2
+        circle(self.xpos + 2.1 * sc * math.cos(dispAngle - math.pi/6), self.ypos + 2.1 * sc * math.sin(dispAngle - math.pi/6), sc)  # ear1
+        circle(self.xpos + 2.1 * sc * math.cos(dispAngle + math.pi/2), self.ypos + 2.1 * sc * math.sin(dispAngle + math.pi/2), sc)  #ear2
 
 
     def sensorLocation(self):
