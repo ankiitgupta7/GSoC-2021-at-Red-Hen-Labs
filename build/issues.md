@@ -5,3 +5,14 @@
 * agents escaping environment never to come back
 * some agents mysteriously develop show fear suddenly after foraging
 * agents show signs of foraging even when hunger < fear TBV
+
+------------------------------------------------
+* Properly implementing non-differentiable alarm calls.
+* Implementing the periodic scan feature of agents.
+* Logging cumulative distance traveled by each agent over time.
+* Having a toggle button to skip data logging or to only log data.
+* To discuss tuning all the parameters to a reasonable value. I will make a list of all the crucial parameters that decide the fate of the simulation.
+# Having a monkey-type outline of the agent instead of the currently shown insect-like look.
+* Letting agents move as per the resultant velocity while they see a predator, resulting from avoiding the predator and fleeing to the refuge.
+* Develop a data logging system that saves simulation data in batches with varying conditions, i.e., simulation parameters.
+* Draw plots from these data and draw the appropriate conclusions.
