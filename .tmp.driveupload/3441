@@ -1,0 +1,32 @@
+0000000000000000000000000000000000000000 e884516daf835d8c54d7136ea9867bd6c7e1fe75 ankiitgupta7 <ankiitgupta7@gmail.com> 1622045709 +0530	initial pull
+e884516daf835d8c54d7136ea9867bd6c7e1fe75 1f30ee8581223ac62bf9c3daa088dae8b7776196 ankiitgupta7 <ankiitgupta7@gmail.com> 1622045878 +0530	commit: Initial files
+1f30ee8581223ac62bf9c3daa088dae8b7776196 20f4ebb9ef0b3a863977ceb8564269cd0dd4d536 ankiitgupta7 <ankiitgupta7@gmail.com> 1622312852 +0530	commit: imported BV platform as the sim-env
+20f4ebb9ef0b3a863977ceb8564269cd0dd4d536 40354031b42f04e09a6a9310b8b659b2754b656c ankiitgupta7 <ankiitgupta7@gmail.com> 1622783194 +0530	commit: added FoV feature to agents
+40354031b42f04e09a6a9310b8b659b2754b656c 99102a468775e8ecc64b628299ef65ddc7ad5757 Ankit Gupta <ankiitgupta7@gmail.com> 1624724380 +0530	commit: After Week 3
+99102a468775e8ecc64b628299ef65ddc7ad5757 8981a518b2b016bc5f6f94be10f97d00b05edabb Ankit Gupta <ankiitgupta7@gmail.com> 1624746076 +0530	commit: fixed hideout issues
+8981a518b2b016bc5f6f94be10f97d00b05edabb d3689d016e443d94eda3c605a48315ac370c2a11 Ankit Gupta <ankiitgupta7@gmail.com> 1624794953 +0530	commit: fixed unwanted orients in hideouts
+d3689d016e443d94eda3c605a48315ac370c2a11 6beed58170cffda6a4b3b2500dcba0ec35ec5366 Ankit Gupta <ankiitgupta7@gmail.com> 1625076535 +0530	commit: minor changes
+6beed58170cffda6a4b3b2500dcba0ec35ec5366 36c5dabde7938634ef3b8447e663986f422b64dd Ankit Gupta <ankiitgupta7@gmail.com> 1625752559 +0530	commit: alarm calls done
+36c5dabde7938634ef3b8447e663986f422b64dd 78a7ca4664ca716074466be7c4eba16395d8a98e Ankit Gupta <ankiitgupta7@gmail.com> 1626890158 +0530	commit: introduced alarm toggle option
+78a7ca4664ca716074466be7c4eba16395d8a98e 8082781cb9782733234c895fda0d94efa8253ec1 Ankit Gupta <ankiitgupta7@gmail.com> 1626958081 +0530	commit: represented alarm call giving vervets
+8082781cb9782733234c895fda0d94efa8253ec1 3dcf1ed5511bb32736d8e8a178d745968f09d6a8 Ankit Gupta <ankiitgupta7@gmail.com> 1627329442 +0530	commit: updated resource distro., documented code
+3dcf1ed5511bb32736d8e8a178d745968f09d6a8 b1735cb5cec03fc0b0277f0b483b91334d456b45 Ankit Gupta <ankiitgupta7@gmail.com> 1627330420 +0530	commit: **
+b1735cb5cec03fc0b0277f0b483b91334d456b45 16e6114f1904b8b63dbb9e5723adf3180ad93c67 Ankit Gupta <ankiitgupta7@gmail.com> 1627506342 +0530	commit: implemented foraging strategy
+16e6114f1904b8b63dbb9e5723adf3180ad93c67 0ab5acfb693cd0b8012c445d1c5c67a2dfd793f9 Ankit Gupta <ankiitgupta7@gmail.com> 1627818564 +0530	commit: foraging strategy and hunger vs fear implemented
+0ab5acfb693cd0b8012c445d1c5c67a2dfd793f9 edaf1b797a1f0b5da63655751fb336bbfa82fe0f Ankit Gupta <ankiitgupta7@gmail.com> 1627944135 +0530	commit: minor UI tweaks
+edaf1b797a1f0b5da63655751fb336bbfa82fe0f e37e4163406de81a1f07e99d91a204410e95dc84 Ankit Gupta <ankiitgupta7@gmail.com> 1627958039 +0530	commit: reorganised move function, removed redundancies
+e37e4163406de81a1f07e99d91a204410e95dc84 97d3957a06d57a5bea52ae46344f9e38f2c490ea Ankit Gupta <ankiitgupta7@gmail.com> 1627961477 +0530	commit: modeled death by starvation
+97d3957a06d57a5bea52ae46344f9e38f2c490ea 5f8958121a5dc16ca4c728a6d6337429b5fdd920 Ankit Gupta <ankiitgupta7@gmail.com> 1628030002 +0530	commit: implemented undifferentiated alarm calls
+5f8958121a5dc16ca4c728a6d6337429b5fdd920 4ef4dff44eef7f630d85012a8e1ccb0cf3299f5f Ankit Gupta <ankiitgupta7@gmail.com> 1628107311 +0530	commit: modeled predation
+4ef4dff44eef7f630d85012a8e1ccb0cf3299f5f 8d86b4588b4bfbf0d3c95d802bed6effea43a5d3 Ankit Gupta <ankiitgupta7@gmail.com> 1628548023 +0530	commit: very minor fixes
+8d86b4588b4bfbf0d3c95d802bed6effea43a5d3 81e9fcced374b6b985b2d34d40164fc81e220049 Ankit Gupta <ankiitgupta7@gmail.com> 1628632601 +0530	commit: logged agent deaths as .csv & plotted them
+81e9fcced374b6b985b2d34d40164fc81e220049 32d3640dc6715c70719969d7238e3e8651eff4c1 Ankit Gupta <ankiitgupta7@gmail.com> 1628706327 +0530	commit: letting death representation last on simulation
+32d3640dc6715c70719969d7238e3e8651eff4c1 0c0cd2ee5e6690294cc7586b415f84e1afa340a8 Ankit Gupta <ankiitgupta7@gmail.com> 1628713008 +0530	commit: generated avg hunger, fear & energy level csv data
+0c0cd2ee5e6690294cc7586b415f84e1afa340a8 162b4e6c1bbee82f9f18a238412401dfbe1df67b Ankit Gupta <ankiitgupta7@gmail.com> 1628727258 +0530	commit: modeled predator energy levels and death
+162b4e6c1bbee82f9f18a238412401dfbe1df67b 8881c73ead425405b989bb4a59075a2427e480f6 Ankit Gupta <ankiitgupta7@gmail.com> 1628950241 +0530	commit: modeled agent reproduction
+8881c73ead425405b989bb4a59075a2427e480f6 20407612ac311521e033acf08da37161fbb1f2e7 Ankit Gupta <ankiitgupta7@gmail.com> 1629479770 +0530	commit: uploaded software packages
+20407612ac311521e033acf08da37161fbb1f2e7 fc90258d932d1907f58715f064750b1b9f8b625e Ankit Gupta <ankiitgupta7@gmail.com> 1629482777 +0530	commit: readme notice
+fc90258d932d1907f58715f064750b1b9f8b625e cc42ed1d3dc59c54ac3b2c3f43778c7deb7545c5 Ankit Gupta <ankiitgupta7@gmail.com> 1629483331 +0530	commit: zipped software packages
+cc42ed1d3dc59c54ac3b2c3f43778c7deb7545c5 49708840ce11e5e260274668d0e151916fcc9569 Ankit Gupta <ankiitgupta7@gmail.com> 1630491896 +0530	commit: updated agent outline as monkey-like
+49708840ce11e5e260274668d0e151916fcc9569 ea3d40b602c289d7dd5aea6a2a8b0c04bb006cf2 Ankit Gupta <ankiitgupta7@gmail.com> 1630584360 +0530	commit: cleaned the software directory
+ea3d40b602c289d7dd5aea6a2a8b0c04bb006cf2 d652bacb430dda2ccc083afc57b0c98526ddf502 Ankit Gupta <ankiitgupta7@gmail.com> 1631044103 +0530	commit: issue update and putting folder on google drive
