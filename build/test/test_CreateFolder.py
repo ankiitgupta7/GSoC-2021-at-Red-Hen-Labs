@@ -1,14 +1,27 @@
 # Python program to explain os.mkdir() method
+
+# taken from https://www.geeksforgeeks.org/create-a-directory-in-python/
   
 # importing os module
 import os
+
+	
+dd = day()  # Values from 1 - 31
+mm = month()  # Values from 1 - 12
+yyyy = year()  # 2003, 2004, 2005, etc.
+HH = hour()
+MM = minute()
+
+timeStamp = str(dd) + "-" + str(mm) + "-" + str(yyyy) + " " + str(HH) + "-" + str(MM)
+print(timeStamp)
+
   
 # Directory
-directory = "GeeksforGeeks"
-  
+directory = timeStamp
+
 # Parent Directory path
-parent_dir = "E:/Work/Active/Red Hen Lab/build"
-  
+parent_dir = "./data"
+
 # Path
 path = os.path.join(parent_dir, directory)
   
@@ -16,23 +29,8 @@ path = os.path.join(parent_dir, directory)
 # 'GeeksForGeeks' in
 # '/home / User / Documents'
 os.mkdir(path)
-print("Directory '% s' created" % directory)
-  
-# Directory
-directory = "Geeks"
-  
-# Parent Directory path
-parent_dir = "E:/Work/Active/Red Hen Lab/build"
-  
-# mode
-mode = 0o666
-  
-# Path
-path = os.path.join(parent_dir, directory)
-  
-# Create the directory
-# 'GeeksForGeeks' in
-# '/home / User / Documents'
-# with mode 0o666
-os.mkdir(path, mode)
+simParam = createWriter(path+"/simParameters.txt")
+simParam.print("Total number of Vervets = ")
+simParam.flush()
+simParam.close()    
 print("Directory '% s' created" % directory)

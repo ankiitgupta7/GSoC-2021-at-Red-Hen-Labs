@@ -4,6 +4,7 @@ import math
 import stimulus
 import vehicle
 import resource
+import os
 # Remember to check on path of the stimulus image file at line 16-18
 
 # Please note that this code requires the library "controlP5", 
@@ -13,6 +14,7 @@ import resource
 
 D = 650 #canvas dimensions
 
+dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
 
 img1 = loadImage("E:/Work/Active/Red Hen Lab/Images/leopard2.jpg")
 img2 = loadImage("E:/Work/Active/Red Hen Lab/Images/hawk1.jpg")
@@ -132,25 +134,25 @@ def draw():
         toggleAlarm = int(cp5.getController("Toggle Alarms").getValue())
         agentPopGrowth = int(cp5.getController("Agent Reproduction").getValue())
         if(toggleAlarm==0):
-            starveDeath = createWriter("./data/starveDeath.csv")   # to write the output file
-            predationDeath = createWriter("./data/predationDeath.csv")   # to write the output file
-            leopardDeath = createWriter("./data/leopardDeath.csv")   # to write the output file
-            hawkDeath = createWriter("./data/hawkDeath.csv")   # to write the output file
-            pythonDeath = createWriter("./data/pythonDeath.csv")   # to write the output file
-            totalDeath = createWriter("./data/totalDeath.csv")   # to write the output file
-            avgFear = createWriter("./data/avgFear.csv")   # to write the output file
-            avgHunger = createWriter("./data/avgHunger.csv")   # to write the output file
-            avgEnergy = createWriter("./data/avgEnergy.csv")   # to write the output file
+            starveDeath = createWriter(dataDirectory + "/starveDeath.csv")   # to write the output file
+            predationDeath = createWriter(dataDirectory + "/predationDeath.csv")   # to write the output file
+            leopardDeath = createWriter(dataDirectory + "/leopardDeath.csv")   # to write the output file
+            hawkDeath = createWriter(dataDirectory + "/hawkDeath.csv")   # to write the output file
+            pythonDeath = createWriter(dataDirectory + "/pythonDeath.csv")   # to write the output file
+            totalDeath = createWriter(dataDirectory + "/totalDeath.csv")   # to write the output file
+            avgFear = createWriter(dataDirectory + "/avgFear.csv")   # to write the output file
+            avgHunger = createWriter(dataDirectory + "/avgHunger.csv")   # to write the output file
+            avgEnergy = createWriter(dataDirectory + "/avgEnergy.csv")   # to write the output file
         elif(toggleAlarm==1):
-            _starveDeath = createWriter("./data/_starveDeath.csv")   # to write the output file
-            _predationDeath = createWriter("./data/_predationDeath.csv")   # to write the output file
-            _leopardDeath = createWriter("./data/_leopardDeath.csv")   # to write the output file
-            _hawkDeath = createWriter("./data/_hawkDeath.csv")   # to write the output file
-            _pythonDeath = createWriter("./data/_pythonDeath.csv")   # to write the output file
-            _totalDeath = createWriter("./data/_totalDeath.csv")   # to write the output file
-            _avgFear = createWriter("./data/_avgFear.csv")   # to write the output file
-            _avgHunger = createWriter("./data/_avgHunger.csv")   # to write the output file
-            _avgEnergy = createWriter("./data/_avgEnergy.csv")   # to write the output file
+            _starveDeath = createWriter(dataDirectory + "/_starveDeath.csv")   # to write the output file
+            _predationDeath = createWriter(dataDirectory + "/_predationDeath.csv")   # to write the output file
+            _leopardDeath = createWriter(dataDirectory + "/_leopardDeath.csv")   # to write the output file
+            _hawkDeath = createWriter(dataDirectory + "/_hawkDeath.csv")   # to write the output file
+            _pythonDeath = createWriter(dataDirectory + "/_pythonDeath.csv")   # to write the output file
+            _totalDeath = createWriter(dataDirectory + "/_totalDeath.csv")   # to write the output file
+            _avgFear = createWriter(dataDirectory + "/_avgFear.csv")   # to write the output file
+            _avgHunger = createWriter(dataDirectory + "/_avgHunger.csv")   # to write the output file
+            _avgEnergy = createWriter(dataDirectory + "/_avgEnergy.csv")   # to write the output file
 
         sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
@@ -372,7 +374,7 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
 
 def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d):
-    simParam = createWriter("./data/simParameters.txt")
+    simParam = createWriter(dataDirectory + "/simParameters.txt")
     simParam.print("Total number of Vervets = ")
     simParam.print(n)
     simParam.print("\n")
