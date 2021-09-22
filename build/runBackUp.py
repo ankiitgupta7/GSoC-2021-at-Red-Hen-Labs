@@ -35,8 +35,8 @@ def draw():
     global cp5, n, d, r, stim, objs, patch, start
     global fov, toggleAlarm, safeTime, startOfSim, agentPopGrowth
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
-    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy
-    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy
+    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath, noAlarmAvgs
+    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, diffAlarmAvgs
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
 
     if(frameCount == 1):
@@ -140,9 +140,10 @@ def draw():
             hawkDeath = createWriter(dataDirectory + "/hawkDeath.csv")   # to write the output file
             pythonDeath = createWriter(dataDirectory + "/pythonDeath.csv")   # to write the output file
             totalDeath = createWriter(dataDirectory + "/totalDeath.csv")   # to write the output file
-            avgFear = createWriter(dataDirectory + "/avgFear.csv")   # to write the output file
-            avgHunger = createWriter(dataDirectory + "/avgHunger.csv")   # to write the output file
-            avgEnergy = createWriter(dataDirectory + "/avgEnergy.csv")   # to write the output file
+            noAlarmAvgs = createWriter(dataDirectory + "/noAlarmAvgs.csv")   # to write the average values
+        elif(toggleAlarm == 1):
+            nonDiffAlarmAvgs = createWriter(dataDirectory + "/nonDiffAlarmAvgs.csv")   # to write the average values
+            
         elif(toggleAlarm==2):
             _starveDeath = createWriter(dataDirectory + "/_starveDeath.csv")   # to write the output file
             _predationDeath = createWriter(dataDirectory + "/_predationDeath.csv")   # to write the output file
@@ -150,9 +151,7 @@ def draw():
             _hawkDeath = createWriter(dataDirectory + "/_hawkDeath.csv")   # to write the output file
             _pythonDeath = createWriter(dataDirectory + "/_pythonDeath.csv")   # to write the output file
             _totalDeath = createWriter(dataDirectory + "/_totalDeath.csv")   # to write the output file
-            _avgFear = createWriter(dataDirectory + "/_avgFear.csv")   # to write the output file
-            _avgHunger = createWriter(dataDirectory + "/_avgHunger.csv")   # to write the output file
-            _avgEnergy = createWriter(dataDirectory + "/_avgEnergy.csv")   # to write the output file
+            diffAlarmAvgs = createWriter(dataDirectory + "/diffAlarmAvgs.csv")   # to write the average values
 
         sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
@@ -345,21 +344,17 @@ def draw():
         # to log total cumulative death per frame
         if(toggleAlarm==0):
             logData(totalDeath, startOfSim, n-len(objs))
-            logData(avgFear, startOfSim, totalFear/len(objs))
-            logData(avgHunger, startOfSim, totalHunger/len(objs))
-            logData(avgEnergy, startOfSim, totalEnergy/len(objs))
+            logData(noAlarmAvgs, startOfSim, totalFear/len(objs),totalHunger/len(objs),totalEnergy/len(objs))
         elif(toggleAlarm==2):
             logData(_totalDeath, startOfSim, n-len(objs))
-            logData(_avgFear, startOfSim, totalFear/len(objs))
-            logData(_avgHunger, startOfSim, totalHunger/len(objs))
-            logData(_avgEnergy, startOfSim, totalEnergy/len(objs))
+            logData(diffAlarmAvgs, startOfSim, totalFear/len(objs),totalHunger/len(objs),totalEnergy/len(objs))
 
         if((frameCount-startOfSim+1) == 3000 and toggleAlarm == 0):
-            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy)
+            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath, noAlarmAvgs)
             #exit()
             print("Data has been saved for 3000 frames.")
         elif((frameCount-startOfSim+1 == 3000) and toggleAlarm == 2):
-            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy)
+            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, diffAlarmAvgs)
             #exit()
             print("Data has been saved for 3000 frames.")
 
@@ -412,10 +407,10 @@ def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d):
     simParam.flush()
     simParam.close()    
 
-def logData(output, startOfSim, data):
+def logData(output, startOfSim, data1, data2, data3):
     output.print(frameCount-startOfSim+1)
     output.print(",")
-    output.print(data) # Write the datum to the file
+    output.print(data1, data2, data3) # Write the datum to the file
     output.print("\n") 
 
 def closeOutputFiles(f1,f2,f3,f4,f5,f6,f7,f8,f9):
