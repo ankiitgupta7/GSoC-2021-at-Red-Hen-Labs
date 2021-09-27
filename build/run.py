@@ -16,9 +16,9 @@ D = 650 #canvas dimensions
 
 dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
 
-img1 = loadImage("E:/Work/Active/Red Hen Lab/Images/leopard2.jpg")
-img2 = loadImage("E:/Work/Active/Red Hen Lab/Images/hawk1.jpg")
-img3 = loadImage("E:/Work/Active/Red Hen Lab/Images/python5.jpg")
+img1 = loadImage("leopard2.jpg")
+img2 = loadImage("hawk1.jpg")
+img3 = loadImage("python5.jpg")
 
 
 
@@ -32,13 +32,14 @@ def setup():
 
 
 def draw():
-    global cp5, n, d, r, stim, objs, patch, start
-    global fov, toggleAlarm, safeTime, startOfSim, agentPopGrowth
+    global cp5, n, d, r, stim, objs, patch, start, img1, img2, img3
+    global fov, toggleAlarm, safeTime, startOfSim, popGrowth, scanFreq, showSim
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
-    global starveDeath, predationDeath,leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy
-    global _starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy
+    global noAlarmStarveDeath, noAlarmPredationDeaths, noAlarmTotalDeath, noAlarmAvgs, noAlarmPopulation
+    global diffAlarmStarveDeath, diffAlarmPredationDeaths, diffAlarmTotalDeath, diffAlarmAvgs, diffAlarmPopulation
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
-
+    
+    showSim = 1
     if(frameCount == 1):
         background('#004477')
         fill(126)
@@ -68,10 +69,13 @@ def draw():
         #cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
         pToggle = cp5.addSlider("Agent Reproduction")
-        pToggle.setPosition(.9*width,10).setSize(30,10).setRange(0, 1).setValue(0).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+        pToggle.setPosition(.9*width,10).setSize(30,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
+        
+        pToggle = cp5.addSlider("Scan Freq")
+        pToggle.setPosition(.9*width,35).setSize(80,10).setRange(10, 100).setValue(30).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
         
         textSize(10)
-        text("Choose No. of Stimulus", .9*width, 60)
+        text("Choose No. of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
         p1.setPosition(.9*width,80).setSize(80,15).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
@@ -97,7 +101,7 @@ def draw():
 
 
         nAgent = cp5.addSlider("Agents")
-        nAgent.setPosition(.9*width,400).setSize(80,15).setRange(30, 300).setValue(120).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        nAgent.setPosition(.9*width,400).setSize(100,15).setRange(50, 5000).setValue(200).setNumberOfTickMarks(100).setSliderMode(Slider.FLEXIBLE)
 
         
         scale = cp5.addSlider("scale")
@@ -132,36 +136,86 @@ def draw():
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
         toggleAlarm = cp5.getController("Toggle Alarms").getValue()
-        agentPopGrowth = int(cp5.getController("Agent Reproduction").getValue())
+        popGrowth = int(cp5.getController("Agent Reproduction").getValue())
+        scanFreq = int(cp5.getController("Scan Freq").getValue())
+
         if(toggleAlarm==0):
-            starveDeath = createWriter(dataDirectory + "/starveDeath.csv")   # to write the output file
-            predationDeath = createWriter(dataDirectory + "/predationDeath.csv")   # to write the output file
-            leopardDeath = createWriter(dataDirectory + "/leopardDeath.csv")   # to write the output file
-            hawkDeath = createWriter(dataDirectory + "/hawkDeath.csv")   # to write the output file
-            pythonDeath = createWriter(dataDirectory + "/pythonDeath.csv")   # to write the output file
-            totalDeath = createWriter(dataDirectory + "/totalDeath.csv")   # to write the output file
-            avgFear = createWriter(dataDirectory + "/avgFear.csv")   # to write the output file
-            avgHunger = createWriter(dataDirectory + "/avgHunger.csv")   # to write the output file
-            avgEnergy = createWriter(dataDirectory + "/avgEnergy.csv")   # to write the output file
+            noAlarmStarveDeath = createWriter(dataDirectory + "/noAlarmStarveDeath.csv")   # to write the output file
+
+            noAlarmPredationDeaths = createWriter(dataDirectory + "/noAlarmPredationDeaths.csv")   # to write the output file
+            noAlarmPredationDeaths.print("Time Unit")
+            noAlarmPredationDeaths.print(",")
+            noAlarmPredationDeaths.print("Leopard Deaths")
+            noAlarmPredationDeaths.print(",")
+            noAlarmPredationDeaths.print("Hawk Deaths")
+            noAlarmPredationDeaths.print(",")
+            noAlarmPredationDeaths.print("Python Deaths")
+            noAlarmPredationDeaths.print(",")
+            noAlarmPredationDeaths.print("Total Predation Deaths")
+            noAlarmPredationDeaths.print("\n")
+
+            noAlarmTotalDeath = createWriter(dataDirectory + "/noAlarmTotalDeath.csv")   # to write the output file
+
+            noAlarmAvgs = createWriter(dataDirectory + "/noAlarmAvgs.csv")   # to write the average values
+            noAlarmAvgs.print("Time Unit")
+            noAlarmAvgs.print(",")
+            noAlarmAvgs.print("Average Fear Level")
+            noAlarmAvgs.print(",")
+            noAlarmAvgs.print("Average Hunger Level")
+            noAlarmAvgs.print(",")
+            noAlarmAvgs.print("Average Energy Level")
+            noAlarmAvgs.print("\n")
+
+            noAlarmPopulation = createWriter(dataDirectory + "/noAlarmPopulation.csv")   # to write the output file
+            noAlarmPopulation.print("Time Unit")
+            noAlarmPopulation.print(",")
+            noAlarmPopulation.print("Vervet Population")
+            noAlarmPopulation.print(",")
+            noAlarmPopulation.print("Predator Population")
+            noAlarmPopulation.print("\n")
+
         elif(toggleAlarm==2):
-            _starveDeath = createWriter(dataDirectory + "/_starveDeath.csv")   # to write the output file
-            _predationDeath = createWriter(dataDirectory + "/_predationDeath.csv")   # to write the output file
-            _leopardDeath = createWriter(dataDirectory + "/_leopardDeath.csv")   # to write the output file
-            _hawkDeath = createWriter(dataDirectory + "/_hawkDeath.csv")   # to write the output file
-            _pythonDeath = createWriter(dataDirectory + "/_pythonDeath.csv")   # to write the output file
-            _totalDeath = createWriter(dataDirectory + "/_totalDeath.csv")   # to write the output file
-            _avgFear = createWriter(dataDirectory + "/_avgFear.csv")   # to write the output file
-            _avgHunger = createWriter(dataDirectory + "/_avgHunger.csv")   # to write the output file
-            _avgEnergy = createWriter(dataDirectory + "/_avgEnergy.csv")   # to write the output file
+            diffAlarmStarveDeath = createWriter(dataDirectory + "/diffAlarmStarveDeath.csv")   # to write the output file
+            diffAlarmPredationDeaths = createWriter(dataDirectory + "/diffAlarmPredationDeaths.csv")   # to write the output file
+            diffAlarmPredationDeaths.print("Time Unit")
+            diffAlarmPredationDeaths.print(",")
+            diffAlarmPredationDeaths.print("Leopard Deaths")
+            diffAlarmPredationDeaths.print(",")
+            diffAlarmPredationDeaths.print("Hawk Deaths")
+            diffAlarmPredationDeaths.print(",")
+            diffAlarmPredationDeaths.print("Python Deaths")
+            diffAlarmPredationDeaths.print(",")
+            diffAlarmPredationDeaths.print("Total Predation Deaths")
+            diffAlarmPredationDeaths.print("\n")
+
+            diffAlarmTotalDeath = createWriter(dataDirectory + "/diffAlarmTotalDeath.csv")   # to write the output file
+
+            diffAlarmAvgs = createWriter(dataDirectory + "/diffAlarmAvgs.csv")   # to write the average values
+            diffAlarmAvgs.print("Time Unit")
+            diffAlarmAvgs.print(",")
+            diffAlarmAvgs.print("Average Fear Level")
+            diffAlarmAvgs.print(",")
+            diffAlarmAvgs.print("Average Hunger Level")
+            diffAlarmAvgs.print(",")
+            diffAlarmAvgs.print("Average Energy Level")
+            diffAlarmAvgs.print("\n")
+
+            diffAlarmPopulation = createWriter(dataDirectory + "/diffAlarmPopulation.csv")   # to write the output file
+            diffAlarmPopulation.print("Time Unit")
+            diffAlarmPopulation.print(",")
+            diffAlarmPopulation.print("Vervet Population")
+            diffAlarmPopulation.print(",")
+            diffAlarmPopulation.print("Predator Population")
+            diffAlarmPopulation.print("\n")
 
         sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0
         safeTime = []
-        for i in range(10*n):   # if agent population crosses 10*n, an error would pop
+        for i in range(100*n):   # if agent population crosses 10*n, an error would pop
             safeTime.append([0,0]) # first value is safeTime value, second is alarm type
             
         for i in range(n1):
             # img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
-            stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard hideout
+            stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
 
         for i in range(n2):
             stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
@@ -249,8 +303,9 @@ def draw():
                 del stim[i]
                 i -= 1
             else:
-                stim[i].move()  
-                stim[i].display()
+                stim[i].move()
+                if(showSim == 1):
+                    stim[i].display()
             i += 1
 
         # processing patches
@@ -263,16 +318,23 @@ def draw():
         totalFear = 0
         totalHunger = 0
         totalEnergy = 0
+        
+        first2See = []
+        for i in range(0,len(stim)):
+            first2See.append(0)
+
         while(i<len(objs)):
             # processing display and movement of vervets
             if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,1])
                 if(toggleAlarm==0):
                     sDeath += 1
-                    logData(starveDeath,startOfSim,sDeath)
+                    tempData = [sDeath]
+                    logData(noAlarmStarveDeath,startOfSim,tempData)
                 elif(toggleAlarm==2):
                     sDeath += 1
-                    logData(_starveDeath,startOfSim,sDeath)
+                    tempData = [sDeath]
+                    logData(diffAlarmStarveDeath,startOfSim,tempData)
 
                 del objs[i]
                 del safeTime[i]
@@ -282,48 +344,62 @@ def draw():
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,2])
                 if(toggleAlarm==0 and objs[i].rfd[1]==1):
                     lDeath += 1
-                    logData(leopardDeath,startOfSim,lDeath)
                 elif(toggleAlarm==2 and objs[i].rfd[1]==1):
                     lDeath += 1
-                    logData(_leopardDeath,startOfSim,lDeath)
 
                 if(toggleAlarm==0 and objs[i].rfd[1]==2):
                     hDeath += 1
-                    logData(hawkDeath,startOfSim,hDeath)
                 elif(toggleAlarm==2 and objs[i].rfd[1]==2):
                     hDeath += 1
-                    logData(_hawkDeath,startOfSim,hDeath)
 
                 if(toggleAlarm==0 and objs[i].rfd[1]==3):
                     pDeath += 1
-                    logData(pythonDeath,startOfSim,pDeath)
                 elif(toggleAlarm==2 and objs[i].rfd[1]==3):
                     pDeath += 1
-                    logData(_pythonDeath,startOfSim,pDeath)
 
                 if(toggleAlarm==0):
                     prDeath += 1
-                    logData(predationDeath,startOfSim,prDeath)
                 elif(toggleAlarm==2):
                     prDeath += 1
-                    logData(_predationDeath,startOfSim,prDeath)
+
+                tempData = [lDeath, hDeath, pDeath, prDeath]
+                if(toggleAlarm == 0):
+                    logData(noAlarmPredationDeaths,startOfSim,tempData)
+                elif(toggleAlarm == 2):
+                    logData(diffAlarmPredationDeaths,startOfSim,tempData)
 
                 del objs[i]
                 del safeTime[i]
                 i -= 1
             else:
-                objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime, frameCount - startOfSim + 1)  
-                objs[i].display(i,len(objs),safeTime,frameCount - startOfSim + 1)
+                objs[i].move(r, fov, i, hideout, len(objs), toggleAlarm, safeTime, first2See, frameCount - startOfSim + 1, scanFreq)  
+                
+                if(showSim == 1):
+                    objs[i].display(i,len(objs),safeTime,frameCount - startOfSim + 1)
+
                 totalFear += objs[i].fLevel
                 totalHunger += (1000 - objs[i].eLevel)
                 totalEnergy += objs[i].eLevel
             i += 1
 
         # modeling agent reproduction
-        if((frameCount-startOfSim+1)%100==0 and agentPopGrowth==1): # add eLevel condn  
-            for i in range(int(.01*len(objs))+1):
-                alpha = 2 * math.pi * random.uniform(0,1)
-                objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, 500, 50, [0,0], patch))
+        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
+            for i in range(len(objs)):
+                if(objs[i].eLevel > 500 and random.uniform(0,1) > .5):
+                    alpha = 2 * math.pi * random.uniform(0,1)
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, 1000 * random.uniform(0,1), 0, [0,0], patch))
+
+        # modelling predator reproduction
+        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
+            for i in range(len(stim)):    
+                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000):
+                    stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
+
+                elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000):
+                    stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
+
+                elif(stim[i].type == 'python' and stim[i].eLevel > 3000):
+                    stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
 
         # represeting death
         x = 0
@@ -344,24 +420,32 @@ def draw():
 
         # to log total cumulative death per frame
         if(toggleAlarm==0):
-            logData(totalDeath, startOfSim, n-len(objs))
-            logData(avgFear, startOfSim, totalFear/len(objs))
-            logData(avgHunger, startOfSim, totalHunger/len(objs))
-            logData(avgEnergy, startOfSim, totalEnergy/len(objs))
-        elif(toggleAlarm==2):
-            logData(_totalDeath, startOfSim, n-len(objs))
-            logData(_avgFear, startOfSim, totalFear/len(objs))
-            logData(_avgHunger, startOfSim, totalHunger/len(objs))
-            logData(_avgEnergy, startOfSim, totalEnergy/len(objs))
+            tempData = [prDeath + sDeath]
+            logData(noAlarmTotalDeath, startOfSim, tempData)
 
-        if((frameCount-startOfSim+1) == 3000 and toggleAlarm == 0):
-            closeOutputFiles(starveDeath, predationDeath, leopardDeath, hawkDeath, pythonDeath, totalDeath, avgFear, avgHunger, avgEnergy)
+            tempData = [len(objs),len(stim)]
+            logData(noAlarmPopulation, startOfSim, tempData)
+
+            tempData = [totalFear/len(objs),totalHunger/len(objs),totalEnergy/len(objs)]
+            logData(noAlarmAvgs, startOfSim, tempData)
+        elif(toggleAlarm==2):
+            tempData = [prDeath + sDeath]
+            logData(diffAlarmTotalDeath, startOfSim, tempData)
+
+            tempData = [len(objs),len(stim)]
+            logData(diffAlarmPopulation, startOfSim, tempData)
+
+            tempData = [totalFear/len(objs),totalHunger/len(objs),totalEnergy/len(objs)]
+            logData(diffAlarmAvgs, startOfSim, tempData)
+
+        if((frameCount-startOfSim+1) == 5000 and toggleAlarm == 0):
+            closeOutputFiles(noAlarmStarveDeath, noAlarmPredationDeaths, noAlarmTotalDeath, noAlarmAvgs, noAlarmPopulation)
             #exit()
-            print("Data has been saved for 3000 frames.")
-        elif((frameCount-startOfSim+1 == 3000) and toggleAlarm == 2):
-            closeOutputFiles(_starveDeath, _predationDeath, _leopardDeath, _hawkDeath, _pythonDeath, _totalDeath, _avgFear, _avgHunger, _avgEnergy)
+            print("Data has been saved for 5000 frames.")
+        elif((frameCount-startOfSim+1 == 5000) and toggleAlarm == 2):
+            closeOutputFiles(diffAlarmStarveDeath, diffAlarmPredationDeaths, diffAlarmTotalDeath, diffAlarmAvgs, diffAlarmPopulation)
             #exit()
-            print("Data has been saved for 3000 frames.")
+            print("Data has been saved for 5000 frames.")
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
@@ -414,11 +498,12 @@ def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d):
 
 def logData(output, startOfSim, data):
     output.print(frameCount-startOfSim+1)
-    output.print(",")
-    output.print(data) # Write the datum to the file
+    for i in range(len(data)):
+        output.print(",")
+        output.print(data[i]) # Write the datum to the file
     output.print("\n") 
 
-def closeOutputFiles(f1,f2,f3,f4,f5,f6,f7,f8,f9):
+def closeOutputFiles(f1,f2,f3,f4,f5):
     f1.flush()  # Writes the remaining data to the file
     f1.close()  # Finishes the file
     f2.flush()
@@ -429,11 +514,3 @@ def closeOutputFiles(f1,f2,f3,f4,f5,f6,f7,f8,f9):
     f4.close()
     f5.flush()
     f5.close()
-    f6.flush()
-    f6.close()
-    f7.flush()
-    f7.close()
-    f8.flush()
-    f8.close()
-    f9.flush()
-    f9.close()

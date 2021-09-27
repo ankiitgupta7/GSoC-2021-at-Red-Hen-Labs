@@ -16,10 +16,17 @@ class stimulus(object):
         
     # to display stimulus
     def display(self):
-        stroke(0)
+        colorGradient = int(255*self.eLevel/10000)
+        strokeWeight(6) 
+        if(self.type == "leopard"):
+            stroke(0,0,colorGradient)
+        elif(self.type == "hawk"):
+            stroke(0,colorGradient,0)
+        elif(self.type == "python"):
+            stroke(colorGradient,0,0)
+        rect(self.x-40,self.y-30,40,30)
         image(self.img,self.x-40,self.y-30,40,30)
-        #circle(self.x,self.y,800)
-
+        strokeWeight(1)
     def location(self):
         return self.x,self.y
     # takes care of vehicle movement

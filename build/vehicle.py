@@ -5,10 +5,6 @@ import stimulus
 import resource
 
 alarm = 0
-first2See = []
-for i in range(0,30):
-    first2See.append(0)
-
 
 # repository of alarm call details
 
@@ -74,8 +70,8 @@ class vehicle(object):
         return ex1, ey1, ex2, ey2
 
 
-    def move(self,r,fov,index,refuge,nAgents,toggleAlarm,safeTime,frameNumber):
-        global v, alarm, lx, ly, hx, hy, px, py, first2See, alarms, _alarms
+    def move(self,r,fov,index,refuge,nAgents,toggleAlarm,safeTime,first2See,frameNumber,scanFreq):
+        global v, alarm, lx, ly, hx, hy, px, py, alarms, _alarms
         v, alarm = 0, 0
         lx, ly, hx, hy, px, py = refuge # obtaining refuge locations
 
@@ -110,7 +106,7 @@ class vehicle(object):
 
         if(alarm>0):    # alarm call is there      
             self.fLevel = 600
-            safeTime[index] = [self.fLevel, alarm]  # checkpoint
+            safeTime[index] = [self.fLevel, alarm]
             if(hLevel>self.fLevel): # hunger vs fear to decide forage or flee
                 v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
             elif(toggleAlarm == 1 and checkhideout!=alarm):
@@ -119,7 +115,7 @@ class vehicle(object):
                 v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, alarm)
         else:   # no alarm call
             # foraging and visual periodic scan of environment 
-            if(frameNumber % 30 != 0):
+            if(frameNumber % scanFreq != 0):
                 v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
             else:   # scanning begins
                 self.eLevel -= 50   # cost of scanning
@@ -166,8 +162,8 @@ class vehicle(object):
                         
                         if(self.fLevel>hLevel):
                             # figuring out resultant vevlocity on spotting a predator
-                            v, self.alpha = moveToAvoid(self, closest)
-                            #v2, alpha2 = moveToRefuge(self, lx, ly, hx, hy, px, py, alarm)
+                           # v, self.alpha = moveToAvoid(self, closest)
+                            v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, alarm)
                            # v2, alpha2 = 0, 0
                             # finding resultant movement data from the above to actions
                           #  vx = v1 * math.cos(alpha1) + v2 * math.cos(alpha2)
@@ -218,7 +214,7 @@ class vehicle(object):
 
                     else:   # if scanning results in no threat
                         v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
-            
+        # checkpoint    
         if(alarm == 0 and safeTime[index][0] > hLevel):    # vervets keeps moving until fear level is more than hunger
             v = 2 * safeTime[index][0] / 1000
             if(safeTime[index][1] == 1):
@@ -257,7 +253,7 @@ class vehicle(object):
             self.alpha += math.pi
 
         if(index == nAgents-1): # end of a particular frame
-            for j in range(0,30):
+            for j in range(0,len(self.stim)):
                 first2See[j]=0
             # use alarm lists of this frame for next frame
             _alarms = alarms

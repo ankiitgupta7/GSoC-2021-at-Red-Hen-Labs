@@ -1,8 +1,8 @@
-Total number of Vervets = 120
-Total number of Predators = 3
-Total number of Leopards = 1
-Total number of Hawks = 1
-Total number of Pythons = 1
+Total number of Vervets = 200
+Total number of Predators = 12
+Total number of Leopards = 4
+Total number of Hawks = 4
+Total number of Pythons = 4
 The distance factor perceptible to Vervets = 50
 Frontal Field of view of Vervets (in degrees) = 200
 Number of grids resource area to be divided into = 100
