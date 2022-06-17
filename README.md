@@ -3,7 +3,7 @@
 This is repository for the project proposal accepted at Google Summer of Code 2021 & being continued in 2022 at Red Hen Labs. The project summary can be found [here](https://summerofcode.withgoogle.com/programs/2022/projects/3gJf6UQy) at the official GSoC website. 
 
 # Project Summary
-Communication within any species is very crucial to its survival. One of the primitive forms of communication featuring mere alarm calls is claimed to aid in the survival of vervet monkeys (Cercopithecus aethiops). There have been attempts to document vervets’ behavior in the wild (Seyfarth, Cheney, & Marler, 1980) to prove the significance of alarm calls in their survival. And this project aims to consolidate this claim using agent-based simulation.
+**Simulating Representational Communication in Vervet Monkeys using Agent-Based Simulation:** Communication within any species is very crucial to its survival. One of the primitive forms of communication featuring mere alarm calls is claimed to aid in the survival of vervet monkeys (Cercopithecus aethiops). There have been attempts to document vervets’ behavior in the wild (Seyfarth, Cheney, & Marler, 1980) to prove the significance of alarm calls in their survival. And this project aims to consolidate this claim using agent-based simulation.
 
 # Simulation Details
 
