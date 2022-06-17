@@ -68,7 +68,7 @@ def draw():
         #cp5.addScrollableList("Opt for Stimuli Motion").setPosition(.9*width, 5).setSize(100, 50).setBarHeight(10).setItemHeight(10).addItems(option)
         #cp5.get(ScrollableList, "Opt for Stimuli Motion").setType(ControlP5.LIST)
 
-        pToggle = cp5.addSlider("Agent Reproduction")
+        pToggle = cp5.addSlider("Reproduction")
         pToggle.setPosition(.9*width,10).setSize(30,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
         
         pToggle = cp5.addSlider("Scan Freq")
@@ -136,7 +136,7 @@ def draw():
         r = int(cp5.getController("r of FoV").getValue())
         fov = int(cp5.getController("FoV Angle").getValue())
         toggleAlarm = cp5.getController("Toggle Alarms").getValue()
-        popGrowth = int(cp5.getController("Agent Reproduction").getValue())
+        popGrowth = int(cp5.getController("Reproduction").getValue())
         scanFreq = int(cp5.getController("Scan Freq").getValue())
 
         if(toggleAlarm==0):
@@ -226,8 +226,8 @@ def draw():
 
 # creating resource patches in the environment
         patch = list() 
-        k = int(cp5.getController("Patch Ratio").getValue())   # number of patches decider, no. of times width/height to be divided
-        patchDensity = cp5.getController("Patch Density").getValue()   # how dense (0,1) the resource point are going to be
+        k = int(cp5.getController("Patch Ratio").getValue())   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
+        patchDensity = cp5.getController("Patch Density").getValue()   # decides how densely (0,1) the patches (the squares) are arranged
         tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
         tempY = D/k
        

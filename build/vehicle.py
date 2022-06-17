@@ -286,7 +286,7 @@ def moveToRefuge(self, lx, ly, hx, hy, px, py, alarm):
 
 def moveToNearestRefuge(self, lx, ly, hx, hy, px, py):
     v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
-    lrd = dist(self.xpos,self.ypos,lx,ly)   # leopard refuse distance
+    lrd = dist(self.xpos,self.ypos,lx,ly)   # leopard refuge distance
     hrd = dist(self.xpos,self.ypos,hx,hy)
     prd = dist(self.xpos,self.ypos,px,py)
 
