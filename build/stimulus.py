@@ -13,6 +13,7 @@ class stimulus(object):
         self.nextAlarm = nextAlarm # gives information about no. of frames after which an alarm is given for this predator if it remains visible
         self.lastKill = lastKill
         self.eLevel = eLevel
+
         
     # to display stimulus
     def display(self):
@@ -56,9 +57,9 @@ class stimulus(object):
 
         # energy decay per frame
         if(v==0):
-            self.eLevel -= .0005 * self.eLevel
+            self.eLevel -= .0004 * self.eLevel
         else:
-            self.eLevel -= (.5*v + .0005 * self.eLevel) # to be tuned later
+            self.eLevel -= (.1*v + .0004 * self.eLevel) # to be tuned later
  
 
 

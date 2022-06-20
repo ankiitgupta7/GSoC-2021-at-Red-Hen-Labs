@@ -39,10 +39,15 @@ class vehicle(object):
 
         fill(c)
         self.displayMonkey()
+
         noStroke()
         fill(0)
-        text(population,10,635)
-        text("Agents Alive",35,635)
+
+
+        textSize(12)
+        text("#Vervets:", .9*width + 2, 590)
+        text(population, .9*width + 2 + 55, 590)
+
 
 
     def displayMonkey(self):   
@@ -235,7 +240,8 @@ class vehicle(object):
         # updating the new position as vehicle moves
         self.xpos = self.xpos + vx
         self.ypos = self.ypos + vy
-        
+
+        # energy decay in agents
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
         if(v==0):
             self.eLevel -= .0005 * self.eLevel

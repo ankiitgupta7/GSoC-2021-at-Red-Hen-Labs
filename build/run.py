@@ -32,7 +32,7 @@ def setup():
 
 
 def draw():
-    global cp5, n, d, r, stim, objs, patch, start, img1, img2, img3
+    global cp5, n, d, r, stim, objs, patch, start, img1, img2, img3, n_leopard, n_hawk, n_python
     global fov, toggleAlarm, safeTime, startOfSim, popGrowth, scanFreq, showSim
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
     global noAlarmStarveDeath, noAlarmPredationDeaths, noAlarmTotalDeath, noAlarmAvgs, noAlarmPopulation
@@ -131,6 +131,7 @@ def draw():
         n1 = int(cp5.getController("leopard").getValue())
         n2 = int(cp5.getController("hawk").getValue())
         n3 = int(cp5.getController("python").getValue())
+        n_leopard, n_hawk, n_python = n1, n2, n3
         n = int(cp5.getController("Agents").getValue())
         d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
         r = int(cp5.getController("r of FoV").getValue())
@@ -287,19 +288,31 @@ def draw():
         textSize(16)
         text("Run Again", .9*width, 566)
         
+        
         textSize(12)
-        text("Color Mapping", .9*width + 2, 590)
+        text("Time Unit:",10,635)
+        text(frameCount-startOfSim+1,70,635)
+
         fill(255,0,0)
-        text("Red: Python", .9*width + 5, 605)
+        text("#Python:", .9*width + 5, 605)
+        text(n_python, .9*width + 5 + 60,605)
         fill(0,255,0)
-        text("Green: Hawk", .9*width + 5, 620)
+        text("#Hawk:", .9*width + 5, 620)
+        text(n_hawk, .9*width + 5 + 60,620)
         fill(0,0,255)
-        text("Blue: Leopard", .9*width + 5, 635)
+        text("#Leopard:", .9*width + 5, 635)
+        text(n_leopard, .9*width + 5 + 60,635)
 
         # processing predators
         i=0
         while(i<len(stim)):
             if(stim[i].eLevel<100 and len(stim)>0):  # death by starvation
+                if(stim[i].type=='leopard'):
+                    n_leopard -= 1
+                elif(stim[i].type=='hawk'):
+                    n_hawk -= 1
+                elif(stim[i].type=='python'):
+                    n_python -= 1
                 del stim[i]
                 i -= 1
             else:
@@ -392,14 +405,17 @@ def draw():
         # modelling predator reproduction
         if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
             for i in range(len(stim)):    
-                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000):
+                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
                     stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
+                    n_leopard += 1
 
-                elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000):
+                elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
                     stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
+                    n_hawk += 1
 
-                elif(stim[i].type == 'python' and stim[i].eLevel > 3000):
+                elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
                     stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
+                    n_python += 1
 
         # represeting death
         x = 0
