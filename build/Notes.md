@@ -6,3 +6,5 @@
 * GitIgnore Help: https://git-scm.com/docs/gitignore; if the .gitignore file doesn't exist, create a new with touch .gitignore; Note that this helps to exclude certain files/folders to be tracked.
 
 * [] Some vervets seems to escape out of environment, due to coward response. Debug by counting how many escape.
+
+* if agent population crosses 1000*n, an error would pop (search for 1000\*n in run.py)
