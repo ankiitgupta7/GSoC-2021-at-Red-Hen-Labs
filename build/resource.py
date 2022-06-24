@@ -22,5 +22,11 @@ class resource(object):
             fill(rLevel[j],rLevel[j],0)
             circle(x[j],y[j],5)
 
+
+    def regrow(self):
+        x,y,rLevel = self.patchPoints # rLevel: resource level
+        for j in range(len(x)):
             if(rLevel[j]<255):
                 rLevel[j] += .5
+                if(rLevel[j]>255):
+                    rLevel[j] = 255

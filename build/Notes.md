@@ -8,3 +8,5 @@
 * [] Some vervets seems to escape out of environment, due to coward response. Debug by counting how many escape.
 
 * if agent population crosses 1000*n, an error would pop (search for 1000\*n in run.py)
+* is the gathering behaviour of agents just an emergent phenomena as a result of common rules, not due to conscious efforts?
+* the fact that with certain parameter condition certain species are going extinct define how sensitive they are to maintain ecological stability.

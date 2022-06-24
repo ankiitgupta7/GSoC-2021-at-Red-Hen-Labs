@@ -44,11 +44,6 @@ class vehicle(object):
         fill(0)
 
 
-        textSize(12)
-        text("#Vervets:", .9*width + 2, 590)
-        text(population, .9*width + 2 + 55, 590)
-
-
 
     def displayMonkey(self):   
         noStroke()
@@ -75,7 +70,7 @@ class vehicle(object):
         return ex1, ey1, ex2, ey2
 
 
-    def move(self,r,fov,index,refuge,nAgents,toggleAlarm,safeTime,first2See,frameNumber,scanFreq):
+    def move(self,r,fov,index,refuge,nAgents,alarmPotency,safeTime,first2See,frameNumber,scanFreq,showSim):
         global v, alarm, lx, ly, hx, hy, px, py, alarms, _alarms
         v, alarm = 0, 0
         lx, ly, hx, hy, px, py = refuge # obtaining refuge locations
@@ -84,7 +79,7 @@ class vehicle(object):
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
         # checking any existing alarm call
-        if(len(_alarms)>0 and toggleAlarm>0):
+        if(len(_alarms)>0 and alarmPotency>0):
             alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r)
 
 
@@ -114,9 +109,9 @@ class vehicle(object):
             safeTime[index] = [self.fLevel, alarm]
             if(hLevel>self.fLevel): # hunger vs fear to decide forage or flee
                 v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
-            elif(toggleAlarm == 1 and checkhideout!=alarm):
+            elif(alarmPotency == 1 and checkhideout!=alarm):
                 v, self.alpha, safeTime[index][1] = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
-            elif(toggleAlarm == 2 and alarm!=checkhideout):
+            elif(alarmPotency == 2 and alarm!=checkhideout):
                 v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, alarm)
         else:   # no alarm call
             # foraging and visual periodic scan of environment 
@@ -183,13 +178,13 @@ class vehicle(object):
 
                         # storing and representing vervet alarm call data as it spots a predator, 
                         # only if it's the first one to see the predator.
-                        if(first2See[closest]== 0 and alarm>0 and toggleAlarm>0):
+                        if(first2See[closest]== 0 and alarm>0 and alarmPotency>0):
                             temp = self.xpos, self.ypos, alarm  
                             alarms.append(temp)   # storing alarm call data to be used in next frame
                             first2See[closest] = 1    # as this vervet is first to see the predator
 
                             # representing undifferentiable alarm calls
-                            if(toggleAlarm == 1):
+                            if(alarmPotency == 1 and showSim == 1):
                                 fill(0)
                                 circle(self.xpos,self.ypos,10)
                                 stroke(0)
@@ -197,25 +192,26 @@ class vehicle(object):
                                 circle(self.xpos,self.ypos,2*auditoryAware)
 
 
-                            if(alarm == 1 and toggleAlarm == 2):
+                            if(alarm == 1 and alarmPotency == 2 and showSim == 1):
                                 # representing alarm calls visually in the environment
                                 fill(0)
                                 circle(self.xpos,self.ypos,10)
                                 stroke(0,0,255)
                                 noFill()
                                 circle(self.xpos,self.ypos,2*auditoryAware)
-                            elif(alarm == 2 and toggleAlarm == 2):
+                            elif(alarm == 2 and alarmPotency == 2 and showSim == 1):
                                 fill(0)
                                 circle(self.xpos,self.ypos,10)
                                 stroke(0,255,0)
                                 noFill()
                                 circle(self.xpos,self.ypos,2*auditoryAware)
-                            elif(alarm == 3 and toggleAlarm == 2):
+                            elif(alarm == 3 and alarmPotency == 2 and showSim == 1):
                                 fill(0)
                                 circle(self.xpos,self.ypos,10)
                                 stroke(255,0,0)
                                 noFill()
                                 circle(self.xpos,self.ypos,2*auditoryAware)
+                            noStroke()
 
                     else:   # if scanning results in no threat
                         v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
