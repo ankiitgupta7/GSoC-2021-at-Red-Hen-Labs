@@ -237,10 +237,10 @@ def draw():
 
         # processing patches
         for i in range(len(patch)):
+            patch[i].patchPoints = patch[i].regrow()
             if showSim == 1:
                 patch[i].display()  # display each resource patch
-            patch[i].regrow()
-
+                
         # processing vervets - death, movement & display
         i = 0
         totalFear = 0
@@ -351,9 +351,9 @@ def draw():
             logData(dataFile, startOfSim, tempData)
           
         # revoke simulation data saving
-        if((frameCount-startOfSim+1) == 200000 and saveData == 1):
+        if((frameCount-startOfSim+1) == 1000000 and saveData == 1):
             closeOutputFiles(dataFile)
-            print("Data has been saved for 200000 frames.")
+            print("Data has been saved for 1000000 frames.")
             #exit()
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
