@@ -45,21 +45,23 @@ class stimulus(object):
             self.xspeed *= -1
         if self.y > height or self.y <=0:
             self.yspeed *= -1
-        if(hd<95):
+        if(hd<95):  # rebound from refuge area where vervets are safe from this predator
             self.xspeed *= -1
             self.yspeed *= -1
-
-        self.x = self.x + self.xspeed
-        self.y = self.y + self.yspeed
+        # predators don't move for 200 frames after kill, don't kill for about 300 frames after kill
+        if self.lastKill > 200:
+            self.x = self.x + self.xspeed
+            self.y = self.y + self.yspeed
+            v = 0
         
         # time elapsed after last kill
         self.lastKill += 1
 
         # energy decay per frame
         if(v==0):
-            self.eLevel -= .0004 * self.eLevel
+            self.eLevel -= .0005 * self.eLevel
         else:
-            self.eLevel -= (.1*v + .0004 * self.eLevel) # to be tuned later
+            self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
  
 
 

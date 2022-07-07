@@ -14,7 +14,7 @@
 # agent / predator reproduction: to make only fit ones duplicate
 # Implementing the periodic scan feature of agents.
 * Logging cumulative distance traveled by each agent over time.
-* Having a toggle button to skip data logging or to only log data.
+# Having a toggle button to skip data logging or to only log data.
 * To discuss tuning all the parameters to a reasonable value. I will make a list of all the crucial parameters that decide the fate of the simulation.
 # Having a monkey-type outline of the agent instead of the currently shown insect-like look.
 # Letting agents move as per the resultant velocity while they see a predator, resulting from avoiding the predator and fleeing to the refuge.

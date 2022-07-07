@@ -87,10 +87,10 @@ class vehicle(object):
         i, proxim = closestPredator(self)  
 
         # check if predator is very close to agent
-        # check if there was no recent kill by this predator
+        # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(proxim<20 and self.stim[i].lastKill>300 and self.stim[i].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
+        if(proxim<20 and self.stim[i].lastKill>abs(300 - int(100000/self.stim[i].eLevel)) and self.stim[i].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[i].type == "leopard"):
                 self.rfd = [1,1]
@@ -113,6 +113,7 @@ class vehicle(object):
                 v, self.alpha, safeTime[index][1] = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
             elif(alarmPotency == 2 and alarm!=checkhideout):
                 v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, alarm)
+
         else:   # no alarm call
             # foraging and visual periodic scan of environment 
             if(frameNumber % scanFreq != 0):
@@ -215,7 +216,8 @@ class vehicle(object):
 
                     else:   # if scanning results in no threat
                         v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
-        # checkpoint    
+
+        # Acting upon collected information    
         if(alarm == 0 and safeTime[index][0] > hLevel):    # vervets keeps moving until fear level is more than hunger
             v = 2 * safeTime[index][0] / 1000
             if(safeTime[index][1] == 1):
@@ -227,6 +229,7 @@ class vehicle(object):
         elif(alarm == 0 and safeTime[index][0]< 10):
             safeTime[index][0] = 0
             safeTime[index][1] = 0
+
         # fear level keeps decreasing by .8% per frame after being recently alarmed, if not further alarmed
         safeTime[index][0] -= safeTime[index][0]*.008
 
@@ -242,7 +245,7 @@ class vehicle(object):
         if(v==0):
             self.eLevel -= .0005 * self.eLevel
         else:
-            self.eLevel -= (.5*v + .0005 * self.eLevel) # to be tuned later
+            self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
 
         # to make vervets take a 180 degree turn as they hit boundary
         if self.xpos > .9*width:

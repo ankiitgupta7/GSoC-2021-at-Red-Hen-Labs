@@ -72,13 +72,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         showSimUI = cp5.addSlider("Show Simulation?")
         showSimUI.setPosition(.9*width,180).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
@@ -91,11 +91,11 @@ def draw():
 
         
         pRatio = cp5.addSlider("P-Ratio")
-        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(4, 20).setValue(12).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
+        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(4, 20).setValue(16).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
 
 
         pDensity = cp5.addSlider("P-Density")
-        pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.6).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
+        pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.3).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
@@ -294,7 +294,7 @@ def draw():
                     objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, 1000 * random.uniform(0,1), 0, [0,0], patch))
 
         # modelling predator reproduction
-        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
+        if((frameCount-startOfSim+1)%5000==0 and popGrowth==1):
             for i in range(len(stim)):    
                 if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
                     stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
