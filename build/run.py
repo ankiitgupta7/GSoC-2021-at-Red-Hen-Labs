@@ -170,7 +170,8 @@ def draw():
         for i in range(n):
             eLevel = 1000 * random.uniform(0,1) # assigning initial energy level to be a random between 0-1000
             alpha = 2 * math.pi * random.uniform(0,1)
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, eLevel, 0, [0,0], patch))
+            movement = 1
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, eLevel, 0, [0,0], patch))
         
 
         # creating and initializing headers for simulation data to be saved
@@ -251,6 +252,7 @@ def draw():
         for i in range(0,len(stim)):
             first2See.append(0)
 
+        i=0
         while(i<len(objs)):
             if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,1])
@@ -279,7 +281,7 @@ def draw():
                 objs[i].move(r, fov, i, hideout, len(objs), alarmPotency, safeTime, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
                 
                 if(showSim == 1):
-                    objs[i].display(i,len(objs),safeTime,frameCount - startOfSim + 1)
+                    objs[i].display(i,safeTime)
 
                 totalFear += objs[i].fLevel
                 totalHunger += (1000 - objs[i].eLevel)
@@ -291,7 +293,8 @@ def draw():
             for i in range(len(objs)):
                 if(objs[i].eLevel > 500 and random.uniform(0,1) > .5):
                     alpha = 2 * math.pi * random.uniform(0,1)
-                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, 1000 * random.uniform(0,1), 0, [0,0], patch))
+                    movement = 1
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, 1000 * random.uniform(0,1), 0, [0,0], patch))
 
         # modelling predator reproduction
         if((frameCount-startOfSim+1)%5000==0 and popGrowth==1):
