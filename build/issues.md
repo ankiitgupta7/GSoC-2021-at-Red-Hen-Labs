@@ -18,6 +18,7 @@
 * To discuss tuning all the parameters to a reasonable value. I will make a list of all the crucial parameters that decide the fate of the simulation.
 # Having a monkey-type outline of the agent instead of the currently shown insect-like look.
 # Letting agents move as per the resultant velocity while they see a predator, resulting from avoiding the predator and fleeing to the refuge.
+* first2See is buggy
 * Develop a data logging system that saves simulation data in batches with varying conditions, i.e., simulation parameters.
 * Draw plots from these data and draw the appropriate conclusions.
 

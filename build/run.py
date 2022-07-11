@@ -33,7 +33,7 @@ def setup():
 
 def draw():
     global cp5, n, d, r, stim, objs, patch, start, img1, img2, img3, n_leopard, n_hawk, n_python
-    global fov, showSim, saveData, alarmPotency, safeTime, startOfSim, popGrowth, scanFreq, showSim
+    global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim
     global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
     global dataFile
@@ -131,12 +131,6 @@ def draw():
         popGrowth = int(cp5.getController("Enable Reproduction").getValue())   # option of reproduction
         scanFreq = int(cp5.getController("Scan Freq").getValue())   # visual scan frequency
 
-        # to keep track of agent state - fear level and alarm state
-        safeTime = []
-        for i in range(1000*n):   # if agent population crosses 1000*n, an error would pop
-            safeTime.append([0,0]) # first value is safeTime value, second is alarm type
-
-
         # generating stimuli at the start of simulation    
         for i in range(n1):
             # img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
@@ -170,8 +164,10 @@ def draw():
         for i in range(n):
             eLevel = 1000 * random.uniform(0,1) # assigning initial energy level to be a random between 0-1000
             alpha = 2 * math.pi * random.uniform(0,1)
-            movement = 1
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, eLevel, 0, [0,0], patch))
+            movement = 1    # movemevent rule, default is to forage
+            recentlySeenPredator = 0    # information about having recently seen predator
+            threat = 0  # awareness about predator
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, 0, [0,0], patch))
         
 
         # creating and initializing headers for simulation data to be saved
@@ -259,7 +255,6 @@ def draw():
                 sDeath += 1
 
                 del objs[i]
-                del safeTime[i]
                 i -= 1
 
             elif(objs[i].rfd[0] == 1 and len(objs)>1): # death by predation
@@ -274,14 +269,13 @@ def draw():
                 prDeath += 1
 
                 del objs[i]
-                del safeTime[i]
                 i -= 1
                 
             else:
-                objs[i].move(r, fov, i, hideout, len(objs), alarmPotency, safeTime, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
+                objs[i].move(r, fov, i, hideout, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
                 
                 if(showSim == 1):
-                    objs[i].display(i,safeTime)
+                    objs[i].display()
 
                 totalFear += objs[i].fLevel
                 totalHunger += (1000 - objs[i].eLevel)
@@ -294,7 +288,9 @@ def draw():
                 if(objs[i].eLevel > 500 and random.uniform(0,1) > .5):
                     alpha = 2 * math.pi * random.uniform(0,1)
                     movement = 1
-                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, 1000 * random.uniform(0,1), 0, [0,0], patch))
+                    recentlySeenPredator = 0
+                    threat = 0
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, recentlySeenPredator, threat, 1000 * random.uniform(0,1), 0, [0,0], patch))
 
         # modelling predator reproduction
         if((frameCount-startOfSim+1)%5000==0 and popGrowth==1):

@@ -12,7 +12,7 @@ alarms = []
 _alarms = [] 
 
 class vehicle(object):
-    def __init__(self, xpos, ypos, z, stim, alpha, movement, eLevel, fLevel, rfd, patch):
+    def __init__(self, xpos, ypos, z, stim, alpha, movement, recentlySeenPredator, threat, eLevel, fLevel, rfd, patch):
         # co-ordinates of the agent
         self.xpos = xpos
         self.ypos = ypos
@@ -20,23 +20,24 @@ class vehicle(object):
         self.stim = stim    # agent having access to all the stimuli present in the environment
         self.alpha = alpha # vehicle's orienation angle wrt +ve x-axis
         self.movement = movement # agent's movement rule
+        self.recentlySeenPredator = recentlySeenPredator    # information about having recently seen predator
+        self.threat = threat    # threat awareness about predators
         self.eLevel = eLevel # energy level of the agent
         self.fLevel = fLevel # fear level of the agent
         self.rfd = rfd # ready for death parameter after being predated
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self, index, safeTime):
-        self.displayMonkey(safeTime,index)
+    def display(self):
+        self.displayMonkey()
 
         noStroke()
         fill(0)
 
 
 
-    def displayMonkey(self,safeTime,index):   
+    def displayMonkey(self):   
         noStroke()
         sc = self.z    # calibrating scale
-
 
         colorGradient = 255*self.eLevel/1000          
         if(colorGradient > 255):
@@ -57,9 +58,14 @@ class vehicle(object):
         triangle(self.xpos + 0.5 * sc * math.cos(dispAngle + 11*math.pi/12), self.ypos + 0.5 * sc * math.sin(dispAngle + 11*math.pi/12), self.xpos + 0.5 * sc * math.cos(dispAngle + 17 * math.pi / 12), self.ypos + 0.5 * sc * math.sin(dispAngle + 17 * math.pi / 12), self.xpos + 1.1 * sc * math.cos(dispAngle + 7*math.pi/6), self.ypos + 1.1 * sc * math.sin(dispAngle + 7*math.pi/6))
         
         if self.movement == 3:
-        #    print safeTime[index][0]
-            colorGradient = 255*safeTime[index][0]/1000
-            fill(color(0,int(colorGradient),int(colorGradient)))
+            colorGradient = 255*self.fLevel/1000
+            if(self.threat==1):
+                c_eyes = color(0,0,int(colorGradient))
+            elif(self.threat==2):
+                c_eyes = color(0,int(colorGradient),0)
+            elif(self.threat==3):
+                c_eyes = color(int(colorGradient),0,0)    
+            fill(c_eyes)
             noStroke()
             circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 3*sc/4)    #eye1
             circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 3*sc/4)    #eye2
@@ -73,11 +79,11 @@ class vehicle(object):
         
         if self.movement == 2:        
             colorGradient = 255*self.fLevel/1000
-            if(safeTime[index][1]==1):
+            if(self.threat==1):
                 c = color(0,0,int(colorGradient))
-            elif(safeTime[index][1]==2):
+            elif(self.threat==2):
                 c = color(0,int(colorGradient),0)
-            elif(safeTime[index][1]==3):
+            elif(self.threat==3):
                 c = color(int(colorGradient),0,0)       
             fill(c)
 
@@ -93,7 +99,7 @@ class vehicle(object):
         return ex1, ey1, ex2, ey2
 
 
-    def move(self,r,fov,index,refuge,nAgents,alarmPotency,safeTime,first2See,frameNumber,scanFreq,showSim):
+    def move(self,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,showSim):
         global v, alarm, lx, ly, hx, hy, px, py, alarms, _alarms
         v, alarm = 0, 0
         lx, ly, hx, hy, px, py = refuge # obtaining refuge locations
@@ -101,14 +107,12 @@ class vehicle(object):
         #setting up hunger level
         hLevel = 1000 - self.eLevel
 
-
         # checking whether the agent is inside a refuge
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
         # checking any alarm call in the last frame
         if(len(_alarms)>0 and alarmPotency>0):
             alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r)
-
 
         # letting the closest predator to vervet attempt to kill
         closest, closestDist = closestPredator(self)
@@ -143,20 +147,20 @@ class vehicle(object):
 
 
         # if vervet has recently seen a predator
-        if(safeTime[index][0]>hLevel and safeTime[index][1] == 4):
+        if(self.fLevel>hLevel and self.recentlySeenPredator == 1):
             self.movement = 3
 
         # alarm call was perceived in the last frame
         elif(alarm>0):      
-            safeTime[index][1] = alarm    # update fear level and corresponding alarm call
-            self.fLevel = 600
+            self.threat = alarm    # update fear level and corresponding alarm call
+            self.fLevel = 600   # fear level due to alarms is less than actual sight
             if(checkhideout!=alarm and hLevel<self.fLevel):
                 self.movement = 2
                 if(alarmPotency == 1):  # just to assign dummy alarm type
-                    v, self.alpha, safeTime[index][1] = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
+                    v, self.alpha, self.threat = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
 
         # checking residual alarm in the vervets
-        elif(self.fLevel>hLevel and safeTime[index][1]>0):
+        elif(self.fLevel>hLevel and self.threat>0):
             self.movement = 2
 
 
@@ -171,7 +175,6 @@ class vehicle(object):
             # check if fear level is more than hunger level
             # check if there was no recent kill by this predator
             if(len(self.stim)>0 and self.stim[closest].lastKill>50):
-
                 # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuge
                 # i.e. to check if agent can visually spot the stimulus [visual scan]
                 if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/PI,fov,x,y)):
@@ -191,8 +194,9 @@ class vehicle(object):
                             alarm = 3
                             self.fLevel = 700
 
-                    safeTime[index] = [self.fLevel, 4]   # time window till vervets moves towards the hideout after being aware
-                    
+                    self.threat = alarm
+                    self.recentlySeenPredator = 1
+
                     if(self.fLevel>hLevel):
                         self.movement = 3 # move in direction opposite to line of sight of predator
                     
@@ -212,22 +216,20 @@ class vehicle(object):
         if(self.movement == 1):
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
         elif(self.movement == 2 and alarmPotency == 1):
-            v, self.alpha, safeTime[index][1] = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
+            v, self.alpha, self.threat = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
         elif(self.movement == 2 and alarmPotency == 2):
-            v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, safeTime[index][1])
+            v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, self.threat)
         elif(self.movement == 3):
             v, self.alpha = moveToAvoid(self, closest)
             
         # disappearance of fear level
-        if(safeTime[index][0]< 10):
-            safeTime[index][0] = 0
-            safeTime[index][1] = 0
+        if(self.fLevel < 10):
+            self.fLevel = 0
+            self.recentlySeenPredator = 0
+            self.threat = 0
 
         # fear level keeps decreasing by 1% per frame after being recently alarmed, if not further alarmed
-        if self.movement == 3:
-            safeTime[index][0] -= safeTime[index][0]*.02
-
-        self.fLevel -= self.fLevel*.01
+        self.fLevel -= self.fLevel*.05
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
