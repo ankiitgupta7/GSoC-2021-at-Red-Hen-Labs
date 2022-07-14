@@ -91,11 +91,11 @@ def draw():
 
         
         pRatio = cp5.addSlider("P-Ratio")
-        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(4, 20).setValue(16).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
+        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(4, 20).setValue(12).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
 
 
         pDensity = cp5.addSlider("P-Density")
-        pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.3).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
+        pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.6).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
@@ -350,9 +350,9 @@ def draw():
             logData(dataFile, startOfSim, tempData)
           
         # revoke simulation data saving
-        if((frameCount-startOfSim+1) == 1000000 and saveData == 1):
+        if((frameCount-startOfSim+1) == 500000 and saveData == 1):
             closeOutputFiles(dataFile)
-            print("Data has been saved for 1000000 frames.")
+            print("Data has been saved for 500000 frames.")
             #exit()
 
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch

@@ -64,7 +64,10 @@ class vehicle(object):
             elif(self.threat==2):
                 c_eyes = color(0,int(colorGradient),0)
             elif(self.threat==3):
-                c_eyes = color(int(colorGradient),0,0)    
+                c_eyes = color(int(colorGradient),0,0)   
+            else:
+                c_eyes = c 
+
             fill(c_eyes)
             noStroke()
             circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 3*sc/4)    #eye1
@@ -118,14 +121,15 @@ class vehicle(object):
         closest, closestDist = closestPredator(self)
     
         # getting details of closest predator and setting up vervet awareness accordingly
-        type = self.stim[closest].type    # type of predator
-        x,y = self.stim[closest].location()    # acquiring location of ith stimulus
-        if(type == "leopard"):
-            awareRadius = 2.5*r
-        elif(type == "hawk"):
-            awareRadius = 2*r
-        elif(type == "python"):
-            awareRadius = r
+        if len(self.stim)>0:
+            type = self.stim[closest].type    # type of predator
+            x,y = self.stim[closest].location()    # acquiring location of ith stimulus
+            if(type == "leopard"):
+                awareRadius = 2.5*r
+            elif(type == "hawk"):
+                awareRadius = 2*r
+            elif(type == "python"):
+                awareRadius = r
 
         # setting auditory awareness thresold of vervets to hear alarm calls
         auditoryAware = 3*r
@@ -134,7 +138,7 @@ class vehicle(object):
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
+        if(len(self.stim)>0 and closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -229,7 +233,7 @@ class vehicle(object):
             self.threat = 0
 
         # fear level keeps decreasing by 1% per frame after being recently alarmed, if not further alarmed
-        self.fLevel -= self.fLevel*.05
+        self.fLevel -= self.fLevel*.01
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)

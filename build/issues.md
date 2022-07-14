@@ -19,6 +19,12 @@
 # Having a monkey-type outline of the agent instead of the currently shown insect-like look.
 # Letting agents move as per the resultant velocity while they see a predator, resulting from avoiding the predator and fleeing to the refuge.
 * first2See is buggy
+* when last vervet dies: ZeroDivisionError: integer division or modulo by zero at 348:0 in run.py
+# when stimuli die: IndexError: index out of range: 0 at 339:0 in vehicle.py
+
+* IndexError: index out of range: 0 at 339:0 in vehicle.py
+* TypeError: cos(): 1st arg can't be coerced to double at 237:0 in vehicle.py
+
 * Develop a data logging system that saves simulation data in batches with varying conditions, i.e., simulation parameters.
 * Draw plots from these data and draw the appropriate conclusions.
 
