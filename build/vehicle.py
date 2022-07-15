@@ -224,7 +224,7 @@ class vehicle(object):
         elif(self.movement == 2 and alarmPotency == 2):
             v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, self.threat)
         elif(self.movement == 3):
-            v, self.alpha = moveToAvoid(self, closest)
+            v, self.alpha = moveToAvoidBV(self, closest)
             
         # disappearance of fear level
         if(self.fLevel < 10):
@@ -233,7 +233,7 @@ class vehicle(object):
             self.threat = 0
 
         # fear level keeps decreasing by 1% per frame after being recently alarmed, if not further alarmed
-        self.fLevel -= self.fLevel*.01
+        self.fLevel -= self.fLevel*.005
 
         vx = v * math.cos(self.alpha)
         vy = v * math.sin(self.alpha)
@@ -247,7 +247,7 @@ class vehicle(object):
         if(v==0):
             self.eLevel -= .0005 * self.eLevel
         else:
-            self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
+            self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
 
         # to make vervets take a 180 degree turn as they hit boundary
         if self.xpos > .9*width:
@@ -372,7 +372,14 @@ def moveToAvoidBV(self,closest):
     v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
     v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
     
+    vel = 2000 / (self.eLevel + 1000) 
+
     v = (v1 + v2) / 2 # net velocity of vehicle
+
+    # capping max speed depending on eLevel 
+    if v>vel:
+        v = vel
+
     self.alpha += (v1 - v2) * .08 # the rotating factor = 0.08
 
     return v, self.alpha

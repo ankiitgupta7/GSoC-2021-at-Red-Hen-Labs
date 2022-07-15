@@ -66,7 +66,7 @@ def draw():
         pToggle.setPosition(.9*width,10).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
         
         pToggle = cp5.addSlider("Scan Freq")
-        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(10, 100).setValue(30).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(30, 300).setValue(90).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
         
         textSize(10)
         text("Choose No. of Stimulus", .9*width, 75)
