@@ -129,6 +129,12 @@ class vehicle(object):
         #setting up hunger level
         hLevel = 1000 - self.eLevel
 
+        # return if there's no predators
+        if len(self.stim)<1:
+            v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
+            updatePosition(self, v)
+            return
+
         # checking whether the agent is inside a refuge
         checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
 
@@ -140,15 +146,14 @@ class vehicle(object):
         closest, closestDist = closestPredator(self)
     
         # getting details of closest predator and setting up vervet awareness accordingly
-        if len(self.stim)>0:
-            type = self.stim[closest].type    # type of predator
-            x,y = self.stim[closest].location()    # acquiring location of ith stimulus
-            if(type == "leopard"):
-                awareRadius = 2.5*r
-            elif(type == "hawk"):
-                awareRadius = 2*r
-            elif(type == "python"):
-                awareRadius = r
+        type = self.stim[closest].type    # type of predator
+        x,y = self.stim[closest].location()    # acquiring location of ith stimulus
+        if(type == "leopard"):
+            awareRadius = 2.5*r
+        elif(type == "hawk"):
+            awareRadius = 2*r
+        elif(type == "python"):
+            awareRadius = r
 
         # setting auditory awareness thresold of vervets to hear alarm calls
         auditoryAware = 3*r
@@ -157,7 +162,7 @@ class vehicle(object):
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(len(self.stim)>0 and closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<6000 and random.uniform(0,1)>.2):    # conditions for predation
+        if(closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -197,7 +202,7 @@ class vehicle(object):
             # check if there are more than one predator
             # check if fear level is more than hunger level
             # check if there was no recent kill by this predator
-            if(len(self.stim)>0 and self.stim[closest].lastKill>50):
+            if(self.stim[closest].lastKill>50):
                 # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuge
                 # i.e. to check if agent can visually spot the stimulus [visual scan]
                 if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/PI,fov,x,y)):
@@ -252,31 +257,18 @@ class vehicle(object):
             self.threat = 0
 
         # fear level keeps decreasing by 1% per frame after being recently alarmed, if not further alarmed
-        self.fLevel -= self.fLevel*.005
+        self.fLevel -= self.fLevel*.0005
 
-        vx = v * math.cos(self.alpha)
-        vy = v * math.sin(self.alpha)
-
-        # updating the new position as vehicle moves
-        self.xpos = self.xpos + vx
-        self.ypos = self.ypos + vy
 
         # energy decay in agents
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
         if(v==0):
-            self.eLevel -= .0005 * self.eLevel
+            self.eLevel -= .005 * self.eLevel
         else:
             self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
 
-        # to make vervets take a 180 degree turn as they hit boundary
-        if self.xpos > .9*width:
-            self.alpha += math.pi
-        elif self.xpos <= 0:
-            self.alpha += math.pi
-        if self.ypos >= height:
-            self.alpha += math.pi
-        elif self.ypos <= 0:
-            self.alpha += math.pi
+        # update coordinate based on velocity, orientation
+        updatePosition(self, v)
 
         if(index == nAgents-1): # end of a particular frame
             for j in range(0,len(self.stim)):
@@ -284,6 +276,29 @@ class vehicle(object):
             # use alarm lists of this frame for next frame
             _alarms = alarms
             alarms = []
+
+
+
+
+def updatePosition(self,v):
+
+    vx = v * math.cos(self.alpha)
+    vy = v * math.sin(self.alpha)
+
+    # updating the new position as vehicle moves
+    self.xpos = self.xpos + vx
+    self.ypos = self.ypos + vy
+
+    # to make vervets take a 180 degree turn as they hit boundary
+    if self.xpos > .9*width:
+        self.alpha += math.pi
+    elif self.xpos <= 0:
+        self.alpha += math.pi
+    if self.ypos >= height:
+        self.alpha += math.pi
+    elif self.ypos <= 0:
+        self.alpha += math.pi
+
 
 def showAlarm(self, alarm, alarmPotency, auditoryAware):
     # representing undifferentiable alarm calls

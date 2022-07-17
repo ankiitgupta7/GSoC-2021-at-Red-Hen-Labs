@@ -62,9 +62,9 @@ class stimulus(object):
 
         # energy decay per frame
         if(v==0):
-            self.eLevel -= .0005 * self.eLevel
+            self.eLevel -= .005 * self.eLevel
         else:
-            self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
+            self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
  
 
 
