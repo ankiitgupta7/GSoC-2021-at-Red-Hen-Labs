@@ -1,7 +1,7 @@
 import math
 import random
 class stimulus(object):
-    def __init__(self, img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel):
+    def __init__(self, img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel):
         self.xspeed = xspeed    # horizontal velocity
         self.yspeed = yspeed    # vertical velocity
         # position of stimulus: (x,y)
@@ -9,6 +9,7 @@ class stimulus(object):
         self.y = y
         self.img = img   # stimulus as image
         self.type = type
+        self.aAge = aAge # adult age of predator
         self.hl = hl # corresponding hideout location
         self.nextAlarm = nextAlarm # gives information about no. of frames after which an alarm is given for this predator if it remains visible
         self.lastKill = lastKill
@@ -26,7 +27,9 @@ class stimulus(object):
         elif(self.type == "python"):
             stroke(colorGradient,0,0)
         rect(self.x-40,self.y-30,40,30)
+        tint(255, int(255*(10000 - self.aAge)/10000))
         image(self.img,self.x-40,self.y-30,40,30)
+        noTint()
         strokeWeight(1)
     def location(self):
         return self.x,self.y

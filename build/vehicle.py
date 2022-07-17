@@ -12,10 +12,11 @@ alarms = []
 _alarms = [] 
 
 class vehicle(object):
-    def __init__(self, xpos, ypos, z, stim, alpha, movement, recentlySeenPredator, threat, eLevel, fLevel, rfd, patch):
+    def __init__(self, xpos, ypos, aAge, z, stim, alpha, movement, recentlySeenPredator, threat, eLevel, fLevel, rfd, patch):
         # co-ordinates of the agent
         self.xpos = xpos
         self.ypos = ypos
+        self.aAge = aAge # adult age of vervet
         self.z = z # vehicle size scale
         self.stim = stim    # agent having access to all the stimuli present in the environment
         self.alpha = alpha # vehicle's orienation angle wrt +ve x-axis
@@ -35,9 +36,26 @@ class vehicle(object):
 
 
 
-    def displayMonkey(self):   
-        noStroke()
+    def displayMonkey(self):  
         sc = self.z    # calibrating scale
+        dispAngle = self.alpha - math.pi/6
+
+        c_outline = color(int(255*(10000-self.aAge)/10000))
+
+
+        # draw outline
+        stroke(c_outline)
+        strokeWeight(sc/3)
+        noFill()
+        circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 2*sc)    #eye1cover
+        circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 2*sc)    #mouthcover
+        circle(self.xpos + sc*math.cos(dispAngle + 7*math.pi/6), self.ypos + sc * math.sin(dispAngle + 7*math.pi/6), 2*sc)    #eye2cover
+        
+        circle(self.xpos + 2.1 * sc * math.cos(dispAngle - math.pi/6), self.ypos + 2.1 * sc * math.sin(dispAngle - math.pi/6), sc)  #ear1
+        circle(self.xpos + 2.1 * sc * math.cos(dispAngle + math.pi/2), self.ypos + 2.1 * sc * math.sin(dispAngle + math.pi/2), sc)  #ear2
+
+        # fill outline
+        noStroke()
 
         colorGradient = 255*self.eLevel/1000          
         if(colorGradient > 255):
@@ -51,6 +69,7 @@ class vehicle(object):
         circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 2*sc)    #mouthcover
         circle(self.xpos + sc*math.cos(dispAngle + 7*math.pi/6), self.ypos + sc * math.sin(dispAngle + 7*math.pi/6), 2*sc)    #eye2cover
         
+        strokeWeight(1)
         stroke(0)
         
 
@@ -138,7 +157,7 @@ class vehicle(object):
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(len(self.stim)>0 and closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
+        if(len(self.stim)>0 and closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<6000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]

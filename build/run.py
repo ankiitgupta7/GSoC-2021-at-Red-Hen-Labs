@@ -131,16 +131,17 @@ def draw():
         popGrowth = int(cp5.getController("Enable Reproduction").getValue())   # option of reproduction
         scanFreq = int(cp5.getController("Scan Freq").getValue())   # visual scan frequency
 
+
         # generating stimuli at the start of simulation    
         for i in range(n1):
-            # img, type, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
-            stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
+            # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
+            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
 
         for i in range(n2):
-            stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
+            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, int(10000 * random.uniform(0,1))))
 
         for i in range(n3):
-            stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
+            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, int(10000 * random.uniform(0,1))))
 
 
         # creating resource patches in the environment
@@ -167,7 +168,8 @@ def draw():
             movement = 1    # movemevent rule, default is to forage
             recentlySeenPredator = 0    # information about having recently seen predator
             threat = 0  # awareness about predator
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, 0, [0,0], patch))
+            aAge = int(10000 * random.uniform(0,1)) # random adult age at start of simulation
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, 0, [0,0], patch))
         
 
         # creating and initializing headers for simulation data to be saved
@@ -217,7 +219,7 @@ def draw():
         # processing predators - death, movement & display
         i=0
         while(i<len(stim)):
-            if(stim[i].eLevel<100 and len(stim)>0):  # death by starvation
+            if((stim[i].eLevel<100 or stim[i].aAge > 9999) and len(stim)>0):  # death by starvation/aging
                 if(stim[i].type=='leopard'):
                     n_leopard -= 1
                 elif(stim[i].type=='hawk'):
@@ -230,6 +232,7 @@ def draw():
                 stim[i].move()
                 if(showSim == 1):
                     stim[i].display()
+                stim[i].aAge += 1
             i += 1
 
         # processing patches
@@ -270,6 +273,12 @@ def draw():
 
                 del objs[i]
                 i -= 1
+
+            elif(objs[i].aAge > 10000 and len(objs)>1): # death due to aging
+                deathLocation.append([objs[i].xpos,objs[i].ypos,0,3])
+                del objs[i]
+                i -= 1
+
                 
             else:
                 objs[i].move(r, fov, i, hideout, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
@@ -277,6 +286,7 @@ def draw():
                 if(showSim == 1):
                     objs[i].display()
 
+                objs[i].aAge += 1
                 totalFear += objs[i].fLevel
                 totalHunger += (1000 - objs[i].eLevel)
                 totalEnergy += objs[i].eLevel
@@ -285,26 +295,28 @@ def draw():
         # modeling agent reproduction
         if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
             for i in range(len(objs)):
-                if(objs[i].eLevel > 500 and random.uniform(0,1) > .5):
+                if(objs[i].eLevel > 300 and random.uniform(0,1) > .5):
                     alpha = 2 * math.pi * random.uniform(0,1)
                     movement = 1
                     recentlySeenPredator = 0
                     threat = 0
-                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), d, stim, alpha, movement, recentlySeenPredator, threat, 1000 * random.uniform(0,1), 0, [0,0], patch))
+                    aAge = 0
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), aAge, d, stim, alpha, movement, recentlySeenPredator, threat, 1000 * random.uniform(0,1), 0, [0,0], patch))
 
         # modelling predator reproduction
-        if((frameCount-startOfSim+1)%5000==0 and popGrowth==1):
+        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
             for i in range(len(stim)):    
+                stim_aAge = 0
                 if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img1, 'leopard', .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
+                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
                     n_leopard += 1
 
                 elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img2, 'hawk', .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
                     n_hawk += 1
 
                 elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img3, 'python', .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
                     n_python += 1
 
         # represeting death
@@ -314,10 +326,14 @@ def draw():
                 deathLocation[x][2] += 1
                 if(deathLocation[x][3]==1 and showSim == 1):    # death by starvation
                     fill(0)
-                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20)
+                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*d/9)
                 elif(deathLocation[x][3]==2 and showSim == 1):  # death by predation
                     fill(0)
-                    circle(deathLocation[x][0],deathLocation[x][1],20)
+                    circle(deathLocation[x][0],deathLocation[x][1],20*d/9)
+                elif(deathLocation[x][3]==3 and showSim == 1):  # death by aging
+                    fill(255)
+                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*d/9)
+                    fill(0)
             else:
                 del deathLocation[x]
                 x -= 1

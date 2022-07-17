@@ -21,7 +21,7 @@
 * first2See is buggy
 * when last vervet dies: ZeroDivisionError: integer division or modulo by zero at 348:0 in run.py
 # when stimuli die: IndexError: index out of range: 0 at 339:0 in vehicle.py
-
+* take care of extinction case
 * IndexError: index out of range: 0 at 339:0 in vehicle.py
 * TypeError: cos(): 1st arg can't be coerced to double at 237:0 in vehicle.py
 
