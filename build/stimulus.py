@@ -1,7 +1,7 @@
 import math
 import random
 class stimulus(object):
-    def __init__(self, img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel):
+    def __init__(self, img, type, aAge, x, y, xspeed, yspeed, avoidLocations, nextAlarm, lastKill, eLevel):
         self.xspeed = xspeed    # horizontal velocity
         self.yspeed = yspeed    # vertical velocity
         # position of stimulus: (x,y)
@@ -10,7 +10,7 @@ class stimulus(object):
         self.img = img   # stimulus as image
         self.type = type
         self.aAge = aAge # adult age of predator
-        self.hl = hl # corresponding hideout location
+        self.avoidLocations = avoidLocations # corresponding hideout location
         self.nextAlarm = nextAlarm # gives information about no. of frames after which an alarm is given for this predator if it remains visible
         self.lastKill = lastKill
         self.eLevel = eLevel
@@ -31,14 +31,17 @@ class stimulus(object):
         image(self.img,self.x-40,self.y-30,40,30)
         noTint()
         strokeWeight(1)
+
     def location(self):
         return self.x,self.y
+
+
     # takes care of vehicle movement
     def move(self):
-        hx,hy = self.hl
-        hd = dist(self.x,self.y,hx,hy)  # distance from hideout
+        closestAvoidDist, safeDist = getClosestAvoidDist(self)
         v = math.sqrt(self.xspeed**2+self.yspeed**2)
         
+
         # to update eLevel in case of successfull kill
         if(self.lastKill == 5): # energy refill after 5 frames of kill
             self.eLevel += 1000
@@ -48,26 +51,36 @@ class stimulus(object):
             self.xspeed *= -1
         if self.y > height or self.y <=0:
             self.yspeed *= -1
-        if(hd<95):  # rebound from refuge area where vervets are safe from this predator
+
+        if(closestAvoidDist<safeDist):  # rebound from refuge area where vervets are safe from this predator
             self.xspeed *= -1
             self.yspeed *= -1
+
         # predators don't move for 200 frames after kill, don't kill for about 300 frames after kill
         if self.lastKill > 200:
             self.x = self.x + self.xspeed
             self.y = self.y + self.yspeed
+        else:
             v = 0
         
         # time elapsed after last kill
         self.lastKill += 1
 
         # energy decay per frame
-        if(v==0):
-            self.eLevel -= .005 * self.eLevel
-        else:
-            self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
+        self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
  
-
-
 
 def dist(x,y,sx,sy):
     return sqrt((x-sx)**2+(y-sy)**2)
+
+    
+def getClosestAvoidDist(self):
+    closestDist = width + height    # 'width' and 'height' are processing variables for the same
+    avoidL = self.avoidLocations
+    for i in range(len(avoidL)):
+        avoidX,avoidY = avoidL[i][0], avoidL[i][1]    # acquiring location of ith refuge
+        if(dist(avoidX,avoidY,self.x,self.y)<closestDist):
+            closestDist = dist(avoidX,avoidY,self.x,self.y)
+            safeDist = math.sqrt(avoidL[i][2]**2+avoidL[i][3]**2)
+
+    return closestDist, safeDist

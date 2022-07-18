@@ -14,7 +14,7 @@ class resource(object):
         #circle(self.patchX,self.patchY,5)
         noFill()
         stroke(0,189,135)
-        rect(self.patchX - self.tempX/2 , self.patchY - self.tempY/2, self.tempX, self.tempY)
+      #  rect(self.patchX - self.tempX/2 , self.patchY - self.tempY/2, self.tempX, self.tempY)
         x,y,rLevel = self.patchPoints # rLevel: resource level
 
         noStroke()

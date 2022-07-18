@@ -122,9 +122,8 @@ class vehicle(object):
 
 
     def move(self,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,showSim):
-        global v, alarm, lx, ly, hx, hy, px, py, alarms, _alarms
+        global v, alarm, alarms, _alarms
         v, alarm = 0, 0
-        lx, ly, hx, hy, px, py = refuge # obtaining refuge locations
         self.movement = 1 # default is to forage
         #setting up hunger level
         hLevel = 1000 - self.eLevel
@@ -136,7 +135,7 @@ class vehicle(object):
             return
 
         # checking whether the agent is inside a refuge
-        checkhideout = isInsideHO(self.xpos, self.ypos, lx, ly, hx, hy, px, py)
+        checkhideout = isInsideHO(self, refuge)
 
         # checking any alarm call in the last frame
         if(len(_alarms)>0 and alarmPotency>0):
@@ -185,7 +184,7 @@ class vehicle(object):
             if(checkhideout!=alarm and hLevel<self.fLevel):
                 self.movement = 2
                 if(alarmPotency == 1):  # just to assign dummy alarm type
-                    v, self.alpha, self.threat = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
+                    v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
 
         # checking residual alarm in the vervets
         elif(self.fLevel>hLevel and self.threat>0):
@@ -244,9 +243,9 @@ class vehicle(object):
         if(self.movement == 1):
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
         elif(self.movement == 2 and alarmPotency == 1):
-            v, self.alpha, self.threat = moveToNearestRefuge(self, lx, ly, hx, hy, px, py)
+            v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
         elif(self.movement == 2 and alarmPotency == 2):
-            v, self.alpha = moveToRefuge(self, lx, ly, hx, hy, px, py, self.threat)
+            v, self.alpha = moveToRefuge(self, refuge, self.threat)
         elif(self.movement == 3):
             v, self.alpha = moveToAvoidBV(self, closest)
             
@@ -334,41 +333,56 @@ def showAlarm(self, alarm, alarmPotency, auditoryAware):
 def closestPredator(self):
     m = len(self.stim)
     closest = 0
-    closestDist = 5000
+    closestDist = width + height
     for i in range(m):
         x,y = self.stim[i].location()    # acquiring location of ith stimulus
         if(dist(x,y,self.xpos,self.ypos)<closestDist):
             closestDist = dist(x,y,self.xpos,self.ypos)
             closest = i
-    return closest, closestDist           
+    return closest, closestDist    
+
+    
+def threatRefugeInfo(self, refuge):
+    refugeInfo = list()
+    for i in range(len(refuge)):
+        refugeCode = refuge[i][2]
+        if(self.threat == (refugeCode+1)):  # threat code is 1,2,3 while refugeCode is 0,1,2
+            refugeInfo.append([refuge[i][0],refuge[i][1],refugeCode])  # refugeX, refugeY, refugeCode
+
+    return refugeInfo
+
+def getClosestRefuge(self, refugeLocations):
+    closest = 0
+    closestDist = width + height
+    for i in range(len(refugeLocations)):
+        x,y = refugeLocations[i][0], refugeLocations[i][1]    # acquiring location of ith refuge
+        if(dist(x,y,self.xpos,self.ypos)<closestDist):
+            closestDist = dist(x,y,self.xpos,self.ypos)
+            closestRefuge = x,y
+            refugeCode = refugeLocations[i][2]
+    return refugeCode, closestRefuge
+
 
 # a funtion to orient towards refuge when the agent is alarmed
-def moveToRefuge(self, lx, ly, hx, hy, px, py, alarm):
+def moveToRefuge(self, refuge, alarm):
+    velocity = 2 * self.fLevel / 1000 # updates velocity in case of alarm
+
+    relevantRefuges = threatRefugeInfo(self, refuge)
+    refugeCode, closestRefuge = getClosestRefuge(self, relevantRefuges)
+    closestRefugeX, closestRefugeY = closestRefuge
+    orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
+
+    return velocity, orienation
+
+def moveToNearestRefuge(self, refuge):
     v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
 
-    if(alarm == 1):
-        return v, orientAlpha(lx,ly,self.xpos,self.ypos)
-    elif(alarm == 2):
-        return v, orientAlpha(hx,hy,self.xpos,self.ypos)
-    elif(alarm == 3):
-        return v, orientAlpha(px,py,self.xpos,self.ypos)
-    else:
-        return v, self.alpha
+    refugeCode, closestRefuge = getClosestRefuge(self, refuge)
+    closestRefugeX, closestRefugeY = closestRefuge
+    orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
+    
+    return velocity, orienation, refugeCode+1
 
-def moveToNearestRefuge(self, lx, ly, hx, hy, px, py):
-    v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
-    lrd = dist(self.xpos,self.ypos,lx,ly)   # leopard refuge distance
-    hrd = dist(self.xpos,self.ypos,hx,hy)
-    prd = dist(self.xpos,self.ypos,px,py)
-
-    if(lrd<hrd and lrd<prd):
-        return v, orientAlpha(lx,ly,self.xpos,self.ypos), 1
-    elif(hrd<lrd and hrd<prd):
-        return v, orientAlpha(hx,hy,self.xpos,self.ypos), 2
-    elif(prd<hrd and prd<lrd):
-        return v, orientAlpha(px,py,self.xpos,self.ypos), 3
-    else:
-        return v, self.alpha
 
 def moveToAvoid(self,closest): # to guide vervets
     x,y = self.stim[closest].location()
@@ -471,16 +485,19 @@ def resourceData(ithPatch):
 
 
 
-def isInsideHO(x, y, lx, ly, hx, hy, px, py):
-    # confirms hideout presence
-    if(dist(x,y,lx,ly)<60):
-        return 1    # leopard
-    elif(dist(x,y,hx,hy)<60):
-        return 2    # hawk
-    elif(dist(x,y,px,py)<60):
-        return 3    # python
-    else:
-        return -1
+def isInsideHO(self, refuge):
+    refugeCode = -1
+    for i in range(len(refuge)):
+        cx, cy = refuge[i][0], refuge[i][1] # centre coordinates of refuge
+        refugeCode = refuge[i][2]
+        w, h = refuge[i][3], refuge[i][4]   # width and height of refuge
+
+        xRange = [cx-w/2,cx+w/2]
+        yRange = [cy-h/2,cy+h/2]
+        if self.xpos > xRange[0] and self.xpos < xRange[1] and self.ypos > yRange[0] and self.xpos < yRange[1] :
+            return refugeCode+1 # because threat code is 1,2,3 while refugeCode is 0,1,2
+
+    return refugeCode
 
 
 def orientAlpha(x0,y0,x,y): # returns alpha at x,y oriented towards x0,y0

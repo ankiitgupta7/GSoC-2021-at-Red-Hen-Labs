@@ -20,9 +20,14 @@ img1 = loadImage("leopard2.jpg")
 img2 = loadImage("hawk1.jpg")
 img3 = loadImage("python5.jpg")
 
-
-
 img = img1, img2, img3
+
+
+leopard_trees = loadImage("tree.jpg")
+hawk_bush = loadImage("bush.jpg")
+pyhton_stones = loadImage("stony-ground.jpg")
+
+refugeImage = [leopard_trees, hawk_bush, pyhton_stones] 
 
 start = 0
 
@@ -32,12 +37,12 @@ def setup():
 
 
 def draw():
-    global cp5, n, d, r, stim, objs, patch, start, img1, img2, img3, n_leopard, n_hawk, n_python
+    global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
+    global n_leopard, n_hawk, n_python, k, tempX, tempY
     global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim
-    global lh, hh, ph, lhx, lhy, hhx, hhy, phx, phy, hideout
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
     global dataFile
-    
+
     if(frameCount == 1):    # setting up control panel on executing run.py
         background('#004477')
         fill(126)
@@ -46,14 +51,6 @@ def draw():
         textSize(16)
         text("     Run", .9*width, 566)
 
-        # locating refuge (hideout) locations
-        lhx, lhy = random.uniform(75+.7*2*D,.9*2*D-75), random.uniform(75,D-75)    # leopard hideout centre
-        lh = lhx, lhy
-        hhx, hhy = random.uniform(75,.2*2*D-75), random.uniform(75,D/2-75)    # hawk hideout centre
-        hh = hhx, hhy
-        phx, phy = random.uniform(75,.2*2*D-75), random.uniform(75 + D/2,D-75)    # python hideout centre
-        ph = phx, phy
-        hideout = lhx, lhy, hhx, hhy, phx, phy
 
         # setting up control panel inputs    
         cp5 = ControlP5(this)   
@@ -72,13 +69,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         showSimUI = cp5.addSlider("Show Simulation?")
         showSimUI.setPosition(.9*width,180).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
@@ -90,8 +87,8 @@ def draw():
         aToggle.setPosition(.9*width,240).setSize(45,10).setRange(0, 2).setValue(2).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
         
-        pRatio = cp5.addSlider("P-Ratio")
-        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(4, 20).setValue(12).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
+        pRatio = cp5.addSlider("# of Refuge")
+        pRatio.setPosition(.9*width,300).setSize(60,10).setRange(1, 5).setValue(2).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
 
 
         pDensity = cp5.addSlider("P-Density")
@@ -132,33 +129,35 @@ def draw():
         scanFreq = int(cp5.getController("Scan Freq").getValue())   # visual scan frequency
 
 
+        
+        # creating resource patches in the environment
+        refuge = list()
+        patch = list() 
+        patchSizeControl = 3*int(cp5.getController("# of Refuge").getValue())   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
+        patchDensity = cp5.getController("P-Density").getValue()   # decides how densely (0,1) the patches (the squares) are arranged
+
+        refuge, patch = createResourceRefugePatch(patchSizeControl, patchDensity, refuge, patch)
+      
+
+        # obtain co-ordinates and size of refuges to avoid for predators
+        avoidLocations = list()
+        for i in range(3):
+            avoidLocations.append(avoidRefugeLocations(i, refuge))
+
+        lRefuge, hRefuge, pRefuge = avoidLocations
+
         # generating stimuli at the start of simulation    
         for i in range(n1):
             # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
-            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
+
+            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
 
         for i in range(n2):
-            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, int(10000 * random.uniform(0,1))))
+            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
 
         for i in range(n3):
-            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, int(10000 * random.uniform(0,1))))
+            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
 
-
-        # creating resource patches in the environment
-        patch = list() 
-        k = int(cp5.getController("P-Ratio").getValue())   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
-        patchDensity = cp5.getController("P-Density").getValue()   # decides how densely (0,1) the patches (the squares) are arranged
-        tempX = .5*2*D/k    # because width of resource field is .7 - .2 = .5 times of total width 2*D
-        tempY = D/k
-       
-        for i in range(1,k-1):
-            for j in range(1,k-1):
-                if(random.uniform(0,1) < patchDensity):
-                    # patchPoints contain all the resource points coordinates as well as their resource levels
-                    patchPoints = genPatchPoints([.2*2*D + i*tempX,.2*2*D + (i+1)*tempX], [j*tempY,(j+1)*tempY], k)
-                    patchX = .2*2*D + i*tempX + tempX/2
-                    patchY = j*tempY + tempY/2
-                    patch.append(resource.resource(patchX, patchY, patchPoints,tempX,tempY))      
 
         # creating an array of agents at the start of simulation 
         objs = list()   
@@ -182,24 +181,13 @@ def draw():
         deathLocation = []  # to keep track of death of agents
 
     if(start==1):
-        bc = color(0,100,100)
+        bc = color(114,81,48)
         background(bc)     # background of environment
 
-        if showSim == 1:    # representing refuges
-            fill(0,0,255)
-            textSize(16)
-            textAlign(CENTER, CENTER)
-            circle(lhx,lhy,150)
+        if showSim == 1:    # displaying refuge locations
+            for i in range(len(refuge)):
+                image(refugeImage[i%3], refuge[i][0] - refuge[i][3]/2, refuge[i][1] - refuge[i][4]/2, refuge[i][3], refuge[i][4])
 
-            fill(0,255,0)
-            circle(hhx,hhy,150)
-
-            fill(255,0,0)
-            circle(phx,phy,150)
-            fill(0)
-            text("Leopard Refuge",lhx,lhy)
-            text("Hawk Refuge",hhx,hhy)
-            text("Python Refuge",phx,phy)
 
         elif showSim == 0 and saveData == 1:
             text("Simulation Data Being Saved, Don't Worry!", .5*width, 300)
@@ -281,7 +269,7 @@ def draw():
 
                 
             else:
-                objs[i].move(r, fov, i, hideout, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
+                objs[i].move(r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
                 
                 if(showSim == 1):
                     objs[i].display()
@@ -308,15 +296,15 @@ def draw():
             for i in range(len(stim)):    
                 stim_aAge = 0
                 if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lh, 0, 1000, 5000))   # lh: leopard refuge
+                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, 5000))   # lh: leopard refuge
                     n_leopard += 1
 
                 elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hh, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, 5000))
                     n_hawk += 1
 
                 elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), ph, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, 5000))
                     n_python += 1
 
         # represeting death
@@ -382,6 +370,47 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
         y0.append(random.uniform(y1, y2))
         rLevel.append(random.uniform(55,255))
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
+
+
+def createResourceRefugePatch(k, patchDensity, refuge, patch):
+    tempX = .9*width/(2*k)    # because 10% of total width is taken by control panel
+    tempY = height/k
+    notEmptySpace = list()
+
+    for i in range(0,2*k):
+        for j in range(0,k):
+            if(random.uniform(0,1) < patchDensity):
+                notEmptySpace.append([i*tempX + tempX/2, j*tempY + tempY/2])
+
+    random.shuffle(notEmptySpace) 
+        
+    for i in range(k):
+        # x, y, refugeCode(0,1,2 for leopard, hawk, python resp.), width, height of image
+        refuge.append([notEmptySpace[i][0],notEmptySpace[i][1],i%3,tempX,tempY])
+
+    i = k
+    while i<len(notEmptySpace):
+        patchPoints = genPatchPoints([notEmptySpace[i][0]-tempX/2,notEmptySpace[i][0]+tempX/2], [notEmptySpace[i][1]-tempY/2,notEmptySpace[i][1]+tempY/2], int(240/k))
+        patchX = notEmptySpace[i][0]
+        patchY = notEmptySpace[i][1]
+        patch.append(resource.resource(patchX, patchY, patchPoints, tempX, tempY))  
+        i+=1
+
+    return refuge, patch
+
+
+
+     
+def avoidRefugeLocations(avoidRefugeCode, refuge):
+    refugeInfo = list()
+    for i in range(len(refuge)):
+        refugeCode = refuge[i][2]
+        if(avoidRefugeCode == refugeCode):  # threat code is 1,2,3 while refugeCode is 0,1,2
+            refugeInfo.append([refuge[i][0],refuge[i][1],refuge[i][3],refuge[i][4]])    # x,y coordinates and sizeX, sizeY
+
+    return refugeInfo
+
+
 
 def saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d):
     simParam = createWriter(dataDirectory + "/simParameters.txt")
