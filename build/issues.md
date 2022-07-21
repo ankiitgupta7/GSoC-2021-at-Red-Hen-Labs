@@ -21,10 +21,10 @@
 * first2See is buggy
 * when last vervet dies: ZeroDivisionError: integer division or modulo by zero at 348:0 in run.py
 # when stimuli die: IndexError: index out of range: 0 at 339:0 in vehicle.py
-* take care of extinction case
-* IndexError: index out of range: 0 at 339:0 in vehicle.py
 * TypeError: cos(): 1st arg can't be coerced to double at 237:0 in vehicle.py
+* threat representation during avoiding
+* When number of blocks is too less to represent - IndexError: index out of range: 0 at 466:0 in vehicle.py
 
-* Develop a data logging system that saves simulation data in batches with varying conditions, i.e., simulation parameters.
-* Draw plots from these data and draw the appropriate conclusions.
+
+
 

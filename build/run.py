@@ -38,7 +38,7 @@ def setup():
 
 def draw():
     global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
-    global n_leopard, n_hawk, n_python, k, tempX, tempY
+    global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge
     global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
     global dataFile
@@ -69,13 +69,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(0).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         showSimUI = cp5.addSlider("Show Simulation?")
         showSimUI.setPosition(.9*width,180).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
@@ -150,13 +150,13 @@ def draw():
         for i in range(n1):
             # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
 
-            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
+            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
 
         for i in range(n2):
-            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
+            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
 
         for i in range(n3):
-            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
+            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
 
 
         # creating an array of agents at the start of simulation 
@@ -269,10 +269,10 @@ def draw():
 
                 
             else:
-                objs[i].move(r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
+                objs[i].move(i,r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
                 
                 if(showSim == 1):
-                    objs[i].display()
+                    objs[i].display(i)
 
                 objs[i].aAge += 1
                 totalFear += objs[i].fLevel
@@ -296,15 +296,15 @@ def draw():
             for i in range(len(stim)):    
                 stim_aAge = 0
                 if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, .9*width/2, D/2, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, 5000))   # lh: leopard refuge
+                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, 5000))   # lh: leopard refuge
                     n_leopard += 1
 
                 elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, .9*width/2, D/2, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, 5000))
                     n_hawk += 1
 
                 elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, .9*width/2, D/2, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, 5000))
+                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, 5000))
                     n_python += 1
 
         # represeting death

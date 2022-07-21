@@ -28,15 +28,15 @@ class vehicle(object):
         self.rfd = rfd # ready for death parameter after being predated
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self):
-        self.displayMonkey()
+    def display(self, idNum):
+        self.displayMonkey(idNum)
 
         noStroke()
         fill(0)
 
 
 
-    def displayMonkey(self):  
+    def displayMonkey(self, idNum):  
         sc = self.z    # calibrating scale
         dispAngle = self.alpha - math.pi/6
 
@@ -84,7 +84,7 @@ class vehicle(object):
                 c_eyes = color(0,int(colorGradient),0)
             elif(self.threat==3):
                 c_eyes = color(int(colorGradient),0,0)   
-            else:
+            else:   # case where there's no threat but the vervet is still avoiding
                 c_eyes = c 
 
             fill(c_eyes)
@@ -121,7 +121,7 @@ class vehicle(object):
         return ex1, ey1, ex2, ey2
 
 
-    def move(self,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,showSim):
+    def move(self,idNum,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,showSim):
         global v, alarm, alarms, _alarms
         v, alarm = 0, 0
         self.movement = 1 # default is to forage
@@ -174,11 +174,12 @@ class vehicle(object):
 
 
         # if vervet has recently seen a predator
-        if(self.fLevel>hLevel and self.recentlySeenPredator == 1):
+        if(self.fLevel>hLevel and self.recentlySeenPredator > 0 and checkhideout != self.threat):
             self.movement = 3
+            self.threat = self.recentlySeenPredator
 
         # alarm call was perceived in the last frame
-        elif(alarm>0):      
+        elif(alarm>0 and checkhideout != alarm):      
             self.threat = alarm    # update fear level and corresponding alarm call
             self.fLevel = 600   # fear level due to alarms is less than actual sight
             if(checkhideout!=alarm and hLevel<self.fLevel):
@@ -187,7 +188,7 @@ class vehicle(object):
                     v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
 
         # checking residual alarm in the vervets
-        elif(self.fLevel>hLevel and self.threat>0):
+        elif(self.fLevel>hLevel and self.threat>0 and checkhideout != self.threat):
             self.movement = 2
 
 
@@ -210,19 +211,21 @@ class vehicle(object):
                         if(checkhideout != 1):
                             alarm = 1
                             self.fLevel = 900
+                            self.threat = 1
 
                     elif(type == "hawk"):
                         if(checkhideout != 2):
                             alarm = 2
                             self.fLevel = 800
+                            self.threat = 2
 
                     elif(type == "python"):
                         if(checkhideout != 3):
                             alarm = 3
                             self.fLevel = 700
+                            self.threat = 3
 
-                    self.threat = alarm
-                    self.recentlySeenPredator = 1
+                    self.recentlySeenPredator = self.threat
 
                     if(self.fLevel>hLevel):
                         self.movement = 3 # move in direction opposite to line of sight of predator
@@ -239,18 +242,20 @@ class vehicle(object):
                             showAlarm(self, alarm, alarmPotency, auditoryAware)
 
 
-        # Acting upon movement information    
-        if(self.movement == 1):
+        # Acting upon movement information
+        if(self.movement == 1 and checkhideout != self.threat):
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
         elif(self.movement == 2 and alarmPotency == 1):
             v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
         elif(self.movement == 2 and alarmPotency == 2):
             v, self.alpha = moveToRefuge(self, refuge, self.threat)
         elif(self.movement == 3):
-            v, self.alpha = moveToAvoidBV(self, closest)
+            v, self.alpha = moveToAvoid(self, closest)
+
+
             
         # disappearance of fear level
-        if(self.fLevel < 10):
+        if(self.fLevel < 0):
             self.fLevel = 0
             self.recentlySeenPredator = 0
             self.threat = 0
@@ -261,10 +266,8 @@ class vehicle(object):
 
         # energy decay in agents
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
-        if(v==0):
-            self.eLevel -= .005 * self.eLevel
-        else:
-            self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
+
+        self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
 
         # update coordinate based on velocity, orientation
         updatePosition(self, v)
@@ -280,7 +283,6 @@ class vehicle(object):
 
 
 def updatePosition(self,v):
-
     vx = v * math.cos(self.alpha)
     vy = v * math.sin(self.alpha)
 
@@ -288,15 +290,7 @@ def updatePosition(self,v):
     self.xpos = self.xpos + vx
     self.ypos = self.ypos + vy
 
-    # to make vervets take a 180 degree turn as they hit boundary
-    if self.xpos > .9*width:
-        self.alpha += math.pi
-    elif self.xpos <= 0:
-        self.alpha += math.pi
-    if self.ypos >= height:
-        self.alpha += math.pi
-    elif self.ypos <= 0:
-        self.alpha += math.pi
+
 
 
 def showAlarm(self, alarm, alarmPotency, auditoryAware):
@@ -346,8 +340,9 @@ def threatRefugeInfo(self, refuge):
     refugeInfo = list()
     for i in range(len(refuge)):
         refugeCode = refuge[i][2]
+        refugeSize = refuge[i][3], refuge[i][4]
         if(self.threat == (refugeCode+1)):  # threat code is 1,2,3 while refugeCode is 0,1,2
-            refugeInfo.append([refuge[i][0],refuge[i][1],refugeCode])  # refugeX, refugeY, refugeCode
+            refugeInfo.append([refuge[i][0],refuge[i][1],refugeCode,refuge[i][3],refuge[i][4]])  # refugeX, refugeY, refugeCode, refugeSizeX, refugeSizeY
 
     return refugeInfo
 
@@ -360,26 +355,37 @@ def getClosestRefuge(self, refugeLocations):
             closestDist = dist(x,y,self.xpos,self.ypos)
             closestRefuge = x,y
             refugeCode = refugeLocations[i][2]
-    return refugeCode, closestRefuge
+            refugeSize = refugeLocations[i][3], refugeLocations[i][4]
+    return refugeCode, closestRefuge, closestDist, refugeSize
 
 
 # a funtion to orient towards refuge when the agent is alarmed
 def moveToRefuge(self, refuge, alarm):
-    velocity = 2 * self.fLevel / 1000 # updates velocity in case of alarm
 
     relevantRefuges = threatRefugeInfo(self, refuge)
-    refugeCode, closestRefuge = getClosestRefuge(self, relevantRefuges)
+    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, relevantRefuges)
     closestRefugeX, closestRefugeY = closestRefuge
     orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
+
+    if closestRefugeDist < refugeSize[0]/6 or closestRefugeDist < refugeSize[1]/6:
+        velocity = 0
+    else:
+        velocity = 2 * self.fLevel / 1000 # updates velocity in case of alarm
+
 
     return velocity, orienation
 
 def moveToNearestRefuge(self, refuge):
-    v = 2 * self.fLevel / 1000 # updates velocity in case of alarm
 
-    refugeCode, closestRefuge = getClosestRefuge(self, refuge)
+    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, refuge)
     closestRefugeX, closestRefugeY = closestRefuge
     orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
+
+    if closestRefugeDist < refugeSize[0]/6 or closestRefugeDist < refugeSize[1]/6:
+        velocity = 0
+    else:
+        velocity = 2 * self.fLevel / 1000 # updates velocity in case of alarm
+
     
     return velocity, orienation, refugeCode+1
 
@@ -387,7 +393,7 @@ def moveToNearestRefuge(self, refuge):
 def moveToAvoid(self,closest): # to guide vervets
     x,y = self.stim[closest].location()
     self.alpha = math.pi + orientAlpha(x,y,self.xpos,self.ypos)
-    vel = 2000 / (self.eLevel + 1000) 
+    vel = 2 * self.fLevel / 1000
     return vel, self.alpha
 
 
@@ -420,7 +426,7 @@ def moveToAvoidBV(self,closest):
     v1 = w1*a1 + w4*a2  # velocity activation in 1st wheel
     v2 = w3*a1 + w2*a2  # velocity activation in 2nd wheel
     
-    vel = 2000 / (self.eLevel + 1000) 
+    vel = 2 * self.fLevel / 1000 
 
     v = (v1 + v2) / 2 # net velocity of vehicle
 
@@ -450,7 +456,7 @@ def checkAlarmCall(x,y,alarms,r):
 
 
 def moveToForage(x,y,patch,eLevel):
-    patchDist = 1200
+    patchDist = width + height  # setting this as max value
     nearestPatch = 0 # dummy
     for i in range(0,len(patch)):
         totalR, maxR = resourceData(patch[i])
@@ -462,7 +468,8 @@ def moveToForage(x,y,patch,eLevel):
     totalR, maxR = resourceData(patch[nearestPatch])
 
     if(patchDist > patch[nearestPatch].tempX/3):
-        vel = 2000 / (eLevel + 1000)
+        hLevel = 1000 - eLevel
+        vel = 2 * hLevel / 1000
     else:
         vel = 0
         if(eLevel<900):
@@ -486,18 +493,17 @@ def resourceData(ithPatch):
 
 
 def isInsideHO(self, refuge):
-    refugeCode = -1
     for i in range(len(refuge)):
         cx, cy = refuge[i][0], refuge[i][1] # centre coordinates of refuge
-        refugeCode = refuge[i][2]
+        tempCode = refuge[i][2]
         w, h = refuge[i][3], refuge[i][4]   # width and height of refuge
 
         xRange = [cx-w/2,cx+w/2]
         yRange = [cy-h/2,cy+h/2]
         if self.xpos > xRange[0] and self.xpos < xRange[1] and self.ypos > yRange[0] and self.xpos < yRange[1] :
-            return refugeCode+1 # because threat code is 1,2,3 while refugeCode is 0,1,2
+            return tempCode+1 # because threat code is 1,2,3 while refugeCode is 0,1,2
 
-    return refugeCode
+    return -1
 
 
 def orientAlpha(x0,y0,x,y): # returns alpha at x,y oriented towards x0,y0

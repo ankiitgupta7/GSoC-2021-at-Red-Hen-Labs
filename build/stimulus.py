@@ -67,7 +67,7 @@ class stimulus(object):
         self.lastKill += 1
 
         # energy decay per frame
-        self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
+        self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
  
 
 def dist(x,y,sx,sy):
@@ -83,4 +83,4 @@ def getClosestAvoidDist(self):
             closestDist = dist(avoidX,avoidY,self.x,self.y)
             safeDist = math.sqrt(avoidL[i][2]**2+avoidL[i][3]**2)
 
-    return closestDist, safeDist
+    return closestDist, safeDist/2  # closestDist, safeRadius
