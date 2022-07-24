@@ -146,17 +146,26 @@ def draw():
 
         lRefuge, hRefuge, pRefuge = avoidLocations
 
+
         # generating stimuli at the start of simulation    
         for i in range(n1):
             # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
-
-            stim.append(stimulus.stimulus(img1, 'leopard', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, int(10000 * random.uniform(0,1))))   # lh: leopard refuge
+            lx, ly = getInitialPredatorLocations(lRefuge)
+            randAge = int(10000 * random.uniform(0,1))
+            eLevel = int(10000 * random.uniform(0,1))
+            stim.append(stimulus.stimulus(img1, 'leopard', randAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))   # lh: leopard refuge
 
         for i in range(n2):
-            stim.append(stimulus.stimulus(img2, 'hawk', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
+            hx, hy = getInitialPredatorLocations(hRefuge)
+            randAge = int(10000 * random.uniform(0,1))
+            eLevel = int(10000 * random.uniform(0,1))
+            stim.append(stimulus.stimulus(img2, 'hawk', randAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
 
         for i in range(n3):
-            stim.append(stimulus.stimulus(img3, 'python', int(10000 * random.uniform(0,1)), random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, int(10000 * random.uniform(0,1))))
+            px, py = getInitialPredatorLocations(pRefuge)
+            randAge = int(10000 * random.uniform(0,1))
+            eLevel = int(10000 * random.uniform(0,1))
+            stim.append(stimulus.stimulus(img3, 'python', randAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
 
 
         # creating an array of agents at the start of simulation 
@@ -295,16 +304,22 @@ def draw():
         if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
             for i in range(len(stim)):    
                 stim_aAge = 0
-                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, 5000))   # lh: leopard refuge
+                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):       
+                    lx, ly = getInitialPredatorLocations(lRefuge)
+                    eLevel = int(10000 * random.uniform(0,1))
+                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))
                     n_leopard += 1
 
                 elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, 5000))
+                    hx, hy = getInitialPredatorLocations(hRefuge)
+                    eLevel = int(10000 * random.uniform(0,1))
+                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
                     n_hawk += 1
 
                 elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
-                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, random.uniform(0,1)*.9*width, random.uniform(0,1)*height, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, 5000))
+                    px, py = getInitialPredatorLocations(pRefuge)
+                    eLevel = int(10000 * random.uniform(0,1))
+                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
                     n_python += 1
 
         # represeting death
@@ -359,13 +374,40 @@ def draw():
             print("Data has been saved for 500000 frames.")
             #exit()
 
+
+def dist(x,y,sx,sy):
+    return sqrt((x-sx)**2+(y-sy)**2)
+
+
+def getInitialPredatorLocations(refugeLocations):
+    # refugeLocations has [x,y,sizeX,sizeY] - coordinates(x,y); dimensions(sizeX,sizeY)
+    x, y = random.uniform(0,1)*.9*width, random.uniform(0,1)*height
+
+    while(isInsideRefuge(x,y,refugeLocations)):
+        x, y = random.uniform(0,1)*.9*width, random.uniform(0,1)*height
+
+    return x,y
+
+    
+def isInsideRefuge(x,y,refuge):
+    for i in range(len(refuge)):
+        cx, cy = refuge[i][0], refuge[i][1] # centre coordinates of refuge
+        w, h = refuge[i][2], refuge[i][3]   # width and height of refuge
+
+        safeRadius = math.sqrt(w**2+h**2)/2
+        if dist(cx,cy,x,y) <= safeRadius:
+            return 1
+    return 0
+
+
+
 def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
     y0 = list()
     rLevel = list()
     x1, x2 = xRange
     y1, y2 = yRange
-    for i in range(2*n):
+    for i in range(n):
         x0.append(random.uniform(x1, x2))
         y0.append(random.uniform(y1, y2))
         rLevel.append(random.uniform(55,255))

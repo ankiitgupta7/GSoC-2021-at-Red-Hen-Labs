@@ -27,9 +27,7 @@ class stimulus(object):
         elif(self.type == "python"):
             stroke(colorGradient,0,0)
         rect(self.x-40,self.y-30,40,30)
-        tint(255, int(255*(10000 - self.aAge)/10000))
         image(self.img,self.x-40,self.y-30,40,30)
-        noTint()
         strokeWeight(1)
 
     def location(self):
@@ -67,7 +65,7 @@ class stimulus(object):
         self.lastKill += 1
 
         # energy decay per frame
-        self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
+        self.eLevel -= (.01*v + .0005 * self.eLevel) # to be tuned later
  
 
 def dist(x,y,sx,sy):

@@ -24,6 +24,8 @@
 * TypeError: cos(): 1st arg can't be coerced to double at 237:0 in vehicle.py
 * threat representation during avoiding
 * When number of blocks is too less to represent - IndexError: index out of range: 0 at 466:0 in vehicle.py
+* https://discourse.processing.org/t/loop-animated-gif-in-python-mode/30479
+
 
 
 

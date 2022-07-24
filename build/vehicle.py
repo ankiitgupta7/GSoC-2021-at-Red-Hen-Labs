@@ -261,13 +261,13 @@ class vehicle(object):
             self.threat = 0
 
         # fear level keeps decreasing by 1% per frame after being recently alarmed, if not further alarmed
-        self.fLevel -= self.fLevel*.0005
+        self.fLevel -= self.fLevel*.001
 
 
         # energy decay in agents
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
 
-        self.eLevel -= (.05*v + .0005 * self.eLevel) # to be tuned later
+        self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
 
         # update coordinate based on velocity, orientation
         updatePosition(self, v)
@@ -550,8 +550,6 @@ def isInsideFoV(x0,y0,r,alpha,theta,x,y):
 
     else:            
         return 0
-
-
 
 def dist(x,y,sx,sy):
     return sqrt((x-sx)**2+(y-sy)**2)
