@@ -1,0 +1,2 @@
+* Poverty: those who are in priority (lesser ID number and those who are born at) for resource access remain rich in resource.
+* Death from aging is not a good way for population control, death from starvation becomes handy. Also, eternity is not good for stability of the ecosystem.

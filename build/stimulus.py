@@ -18,7 +18,7 @@ class stimulus(object):
         
     # to display stimulus
     def display(self):
-        colorGradient = int(255*self.eLevel/10000)
+        colorGradient = int(255*self.eLevel/1000)
         strokeWeight(6) 
         if(self.type == "leopard"):
             stroke(0,0,colorGradient)
@@ -42,7 +42,7 @@ class stimulus(object):
 
         # to update eLevel in case of successfull kill
         if(self.lastKill == 5): # energy refill after 5 frames of kill
-            self.eLevel += 1000
+            self.eLevel += 100
 
        # to make the stimuli rebound from boundaries
         if self.x > .9*width or self.x <=0:
@@ -65,7 +65,7 @@ class stimulus(object):
         self.lastKill += 1
 
         # energy decay per frame
-        self.eLevel -= (.01*v + .0005 * self.eLevel) # to be tuned later
+        self.eLevel -= (.01*v + .1) # to be tuned later
  
 
 def dist(x,y,sx,sy):

@@ -69,13 +69,13 @@ def draw():
         text("Choose No. of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         showSimUI = cp5.addSlider("Show Simulation?")
         showSimUI.setPosition(.9*width,180).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
@@ -152,19 +152,19 @@ def draw():
             # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
             lx, ly = getInitialPredatorLocations(lRefuge)
             randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(10000 * random.uniform(0,1))
+            eLevel = int(1000 * random.uniform(0,1))
             stim.append(stimulus.stimulus(img1, 'leopard', randAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))   # lh: leopard refuge
 
         for i in range(n2):
             hx, hy = getInitialPredatorLocations(hRefuge)
             randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(10000 * random.uniform(0,1))
+            eLevel = int(1000 * random.uniform(0,1))
             stim.append(stimulus.stimulus(img2, 'hawk', randAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
 
         for i in range(n3):
             px, py = getInitialPredatorLocations(pRefuge)
             randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(10000 * random.uniform(0,1))
+            eLevel = int(1000 * random.uniform(0,1))
             stim.append(stimulus.stimulus(img3, 'python', randAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
 
 
@@ -183,7 +183,7 @@ def draw():
         # creating and initializing headers for simulation data to be saved
         if(saveData == 1):
             dataFile = saveSimData(alarmPotency)
-            saveSimulationParameters(n, n1, n2, n3, r, fov, k, patchDensity, d)
+            saveSimulationParameters(n, n1, n2, n3, r, fov, patchSizeControl, patchDensity, d)
 
         start = 1   # as simulation is ready to run now!
         startOfSim = frameCount # assigning the framenumber when simulation starts
@@ -216,7 +216,7 @@ def draw():
         # processing predators - death, movement & display
         i=0
         while(i<len(stim)):
-            if((stim[i].eLevel<100 or stim[i].aAge > 9999) and len(stim)>0):  # death by starvation/aging
+            if((stim[i].eLevel<10 or stim[i].aAge > 9999) and len(stim)>0):  # death by starvation/aging
                 if(stim[i].type=='leopard'):
                     n_leopard -= 1
                 elif(stim[i].type=='hawk'):
@@ -304,21 +304,21 @@ def draw():
         if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
             for i in range(len(stim)):    
                 stim_aAge = 0
-                if(stim[i].type == 'leopard' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):       
+                if(stim[i].type == 'leopard' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):       
                     lx, ly = getInitialPredatorLocations(lRefuge)
-                    eLevel = int(10000 * random.uniform(0,1))
+                    eLevel = int(1000 * random.uniform(0,1))
                     stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))
                     n_leopard += 1
 
-                elif(stim[i].type == 'hawk' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
+                elif(stim[i].type == 'hawk' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):
                     hx, hy = getInitialPredatorLocations(hRefuge)
-                    eLevel = int(10000 * random.uniform(0,1))
+                    eLevel = int(1000 * random.uniform(0,1))
                     stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
                     n_hawk += 1
 
-                elif(stim[i].type == 'python' and stim[i].eLevel > 3000 and random.uniform(0,1) > .5):
+                elif(stim[i].type == 'python' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):
                     px, py = getInitialPredatorLocations(pRefuge)
-                    eLevel = int(10000 * random.uniform(0,1))
+                    eLevel = int(1000 * random.uniform(0,1))
                     stim.append(stimulus.stimulus(img3, 'python', stim_aAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
                     n_python += 1
 
@@ -369,7 +369,7 @@ def draw():
             logData(dataFile, startOfSim, tempData)
           
         # revoke simulation data saving
-        if((frameCount-startOfSim+1) == 500000 and saveData == 1):
+        if((frameCount-startOfSim+1) == 30000 and saveData == 1):
             closeOutputFiles(dataFile)
             print("Data has been saved for 500000 frames.")
             #exit()

@@ -131,7 +131,7 @@ class vehicle(object):
         # return if there's no predators
         if len(self.stim)<1:
             v, self.alpha, self.eLevel = moveToForage(self.xpos, self.ypos, self.patch, self.eLevel)
-            updatePosition(self, v)
+            updateEnergyAndPosition(self, v)
             return
 
         # checking whether the agent is inside a refuge
@@ -161,7 +161,7 @@ class vehicle(object):
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 9000
         # probability of predation success in this attempt = 80%
-        if(closestDist<20 and self.stim[closest].lastKill>abs(300 - int(100000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
+        if(closestDist<20 and self.stim[closest].lastKill>abs(300 - int(10000/self.stim[closest].eLevel)) and self.stim[closest].eLevel<9000 and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -255,7 +255,7 @@ class vehicle(object):
 
             
         # disappearance of fear level
-        if(self.fLevel < 0):
+        if(self.fLevel < 10):
             self.fLevel = 0
             self.recentlySeenPredator = 0
             self.threat = 0
@@ -267,10 +267,9 @@ class vehicle(object):
         # energy decay in agents
         # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
 
-        self.eLevel -= (.05*v + .005 * self.eLevel) # to be tuned later
 
         # update coordinate based on velocity, orientation
-        updatePosition(self, v)
+        updateEnergyAndPosition(self, v)
 
         if(index == nAgents-1): # end of a particular frame
             for j in range(0,len(self.stim)):
@@ -282,7 +281,8 @@ class vehicle(object):
 
 
 
-def updatePosition(self,v):
+def updateEnergyAndPosition(self,v):
+    self.eLevel -= (.01*v + .1) # to be tuned later
     vx = v * math.cos(self.alpha)
     vy = v * math.sin(self.alpha)
 
