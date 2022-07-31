@@ -12,7 +12,8 @@ import os
 # please make sure to have the unzipped controlP5 files in the "libraries" folder 
 # other than the "processing-py.jar" file in build directory
 
-D = 650 #canvas dimensions
+D = 650 # canvas dimensions
+fps = 60    # number of desired frames per second
 
 dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
 
@@ -33,15 +34,19 @@ start = 0
 
 # setting up the environment window interface
 def setup():
-    size(2*D,D)
+    size(2*D,D)	
+    frameRate(fps)
 
 
 def draw():
     global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
     global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge
-    global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim
+    global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim, dataFile
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
-    global dataFile
+    global rtm, rdm, rsm, fMax, eMax, fBreed, oneSecond, oneMinute, oneHour, oneDay, oneYear, growthRate, oneMeter
+
+    eMax = 1000 # max energy level
+    fMax = 1000 # max fear level
 
     if(frameCount == 1):    # setting up control panel on executing run.py
         background('#004477')
@@ -63,19 +68,19 @@ def draw():
         pToggle.setPosition(.9*width,10).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
         
         pToggle = cp5.addSlider("Scan Freq")
-        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(30, 300).setValue(90).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(2, 20).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
         
         textSize(10)
-        text("Choose No. of Stimulus", .9*width, 75)
+        text("# of Stimulus", .9*width, 75)
 
         p1 = cp5.addSlider("leopard")
-        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p1.setPosition(.9*width,80).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p2 = cp5.addSlider("hawk")
-        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p2.setPosition(.9*width,110).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         p3 = cp5.addSlider("python")
-        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 18).setValue(4).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        p3.setPosition(.9*width,140).setSize(60,10).setRange(0, 9).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         showSimUI = cp5.addSlider("Show Simulation?")
         showSimUI.setPosition(.9*width,180).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
@@ -87,6 +92,10 @@ def draw():
         aToggle.setPosition(.9*width,240).setSize(45,10).setRange(0, 2).setValue(2).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
         
+        rGrowth = cp5.addSlider("rGrowth%")
+        rGrowth.setPosition(.9*width,270).setSize(60,10).setRange(3, 30).setValue(3).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+        
         pRatio = cp5.addSlider("# of Refuge")
         pRatio.setPosition(.9*width,300).setSize(60,10).setRange(1, 5).setValue(2).setNumberOfTickMarks(5).setSliderMode(Slider.FLEXIBLE)
 
@@ -95,18 +104,26 @@ def draw():
         pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.6).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
+        tScale = cp5.addSlider("Time Scale")
+        tScale.setPosition(.9*width,360).setSize(60,10).setRange(10, 100).setValue(10).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+
+        sScale = cp5.addSlider("Space Scale")
+        sScale.setPosition(.9*width,390).setSize(60,10).setRange(1, 10).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+
+
         nAgent = cp5.addSlider("Agents")
-        nAgent.setPosition(.9*width,400).setSize(60,10).setRange(50, 500).setValue(200).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        nAgent.setPosition(.9*width,440).setSize(60,10).setRange(50, 500).setValue(100).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
-        scale = cp5.addSlider("scale")
-        scale.setPosition(.9*width,430).setSize(60,10).setRange(3, 30).setValue(9).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        scale = cp5.addSlider("Body Size")
+        scale.setPosition(.9*width,470).setSize(60,10).setRange(3, 30).setValue(9).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,460).setSize(60,10).setRange(10, 100).setValue(60).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fov_dist.setPosition(.9*width,500).setSize(60,10).setRange(10, 100).setValue(60).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,490).setSize(60,10).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        angle.setPosition(.9*width,530).setSize(60,10).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
     # triggering start / restart of simulation on clicking the "Run" button on control panel
     if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>550 and mouseY<570:
@@ -119,7 +136,7 @@ def draw():
         n3 = int(cp5.getController("python").getValue())
         n_leopard, n_hawk, n_python = n1, n2, n3
         n = int(cp5.getController("Agents").getValue()) # initial number of agents at the start of simulation
-        d = int(cp5.getController("scale").getValue())  # accessing vehicle scale parameter
+        d = int(cp5.getController("Body Size").getValue())  # accessing agent size scaling parameter
         r = int(cp5.getController("r of FoV").getValue())   # radius of field of view
         fov = int(cp5.getController("FoV Angle").getValue())    # angle of filed of view
         showSim = cp5.getController("Show Simulation?").getValue()   # decision to show simulation or just make computations in background
@@ -127,8 +144,22 @@ def draw():
         alarmPotency = cp5.getController("Alarm Potency").getValue() # alarm conditions
         popGrowth = int(cp5.getController("Enable Reproduction").getValue())   # option of reproduction
         scanFreq = int(cp5.getController("Scan Freq").getValue())   # visual scan frequency
+        rtm = cp5.getController("Time Scale").getValue()   # real time multipier    [/second to /frame]
+        rdm = cp5.getController("Space Scale").getValue()   # real distance multipier   [meter to px] 
+        growthRate = cp5.getController("rGrowth%").getValue()   # resource % growth in a day
+
+        rsm = rtm/(rdm*fps) # real speed multiplier [m/s to px/frame]
+        oneSecond = fps/rtm # number of frames in a second
+        oneMinute = 60*oneSecond # number of frames in a minute
+        oneHour = 60*oneMinute  # number of frames in a hour
+        oneDay = 24*oneHour  # number of frames in a day
+        oneYear = 365*oneDay  # number of frames in a year
+        oneMeter = 1/rdm
 
 
+        fBreed = oneYear    # to be tuned
+        scanFreq = scanFreq * oneMinute
+        r = r * oneMeter
         
         # creating resource patches in the environment
         refuge = list()
@@ -149,35 +180,48 @@ def draw():
 
         # generating stimuli at the start of simulation    
         for i in range(n1):
-            # img, type, aAge, x, y, xspeed, yspeed, hl, nextAlarm, lastKill, eLevel
+            # img, type, aAge, x, y, xspeed, yspeed, hl, lastKill, eLevel
+            # assuming lastKill was oneDay ago
             lx, ly = getInitialPredatorLocations(lRefuge)
-            randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(1000 * random.uniform(0,1))
-            stim.append(stimulus.stimulus(img1, 'leopard', randAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))   # lh: leopard refuge
+            randAge = int(10 * oneYear * random.uniform(0,1))
+            eLevel = eMax * random.uniform(0,1)
+            lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
+            lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
+            swf = 14
+            stim.append(stimulus.stimulus(img1, 'leopard', randAge, lx, ly, lMaxSpeed, lOrient, lRefuge, oneDay, swf, eLevel, eMax))   # lh: leopard refuge
 
         for i in range(n2):
             hx, hy = getInitialPredatorLocations(hRefuge)
-            randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(1000 * random.uniform(0,1))
-            stim.append(stimulus.stimulus(img2, 'hawk', randAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
+            randAge = int(10 * oneYear * random.uniform(0,1))
+            eLevel = eMax * random.uniform(0,1)
+            hMaxSpeed = 45 * rsm
+            hOrient = 2 * math.pi * random.uniform(0,1)
+            swf = 14
+            stim.append(stimulus.stimulus(img2, 'hawk', randAge, hx, hy, hMaxSpeed, hOrient, hRefuge, oneDay, swf, eLevel, eMax))
 
         for i in range(n3):
             px, py = getInitialPredatorLocations(pRefuge)
-            randAge = int(10000 * random.uniform(0,1))
-            eLevel = int(1000 * random.uniform(0,1))
-            stim.append(stimulus.stimulus(img3, 'python', randAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
+            randAge = int(10 * oneYear * random.uniform(0,1))
+            eLevel = eMax * random.uniform(0,1)
+            pMaxSpeed = .45 * rsm
+            pOrient = 2 * math.pi * random.uniform(0,1)
+            swf = 365
+            stim.append(stimulus.stimulus(img3, 'python', randAge, px, py, pMaxSpeed, pOrient, pRefuge, oneDay, swf, eLevel, eMax))
 
 
         # creating an array of agents at the start of simulation 
         objs = list()   
         for i in range(n):
-            eLevel = 1000 * random.uniform(0,1) # assigning initial energy level to be a random between 0-1000
+            eLevel = eMax * random.uniform(0,1) # assigning initial energy level to be a random between 0-eMax
             alpha = 2 * math.pi * random.uniform(0,1)
             movement = 1    # movemevent rule, default is to forage
             recentlySeenPredator = 0    # information about having recently seen predator
             threat = 0  # awareness about predator
-            aAge = int(10000 * random.uniform(0,1)) # random adult age at start of simulation
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, 0, [0,0], patch))
+            aAge = int(10 * oneYear * random.uniform(0,1)) # random adult age at start of simulation
+            maxSpeed = 10 * rsm
+            eLevel = eMax * random.uniform(0,1)
+            swf = 30 # to be tuned
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
         
 
         # creating and initializing headers for simulation data to be saved
@@ -188,6 +232,8 @@ def draw():
         start = 1   # as simulation is ready to run now!
         startOfSim = frameCount # assigning the framenumber when simulation starts
         deathLocation = []  # to keep track of death of agents
+
+        showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r)
 
     if(start==1):
         bc = color(114,81,48)
@@ -216,7 +262,7 @@ def draw():
         # processing predators - death, movement & display
         i=0
         while(i<len(stim)):
-            if((stim[i].eLevel<10 or stim[i].aAge > 9999) and len(stim)>0):  # death by starvation/aging
+            if((stim[i].eLevel< .01*stim[i].eMax or stim[i].aAge >= 10 * oneYear) and len(stim)>0):  # death by starvation/aging
                 if(stim[i].type=='leopard'):
                     n_leopard -= 1
                 elif(stim[i].type=='hawk'):
@@ -226,7 +272,7 @@ def draw():
                 del stim[i]
                 i -= 1
             else:
-                stim[i].move()
+                stim[i].move(oneHour)
                 if(showSim == 1):
                     stim[i].display()
                 stim[i].aAge += 1
@@ -234,7 +280,7 @@ def draw():
 
         # processing patches
         for i in range(len(patch)):
-            patch[i].patchPoints = patch[i].regrow()
+            patch[i].patchPoints = patch[i].regrow(oneDay, growthRate)
             if showSim == 1:
                 patch[i].display()  # display each resource patch
                 
@@ -249,15 +295,15 @@ def draw():
             first2See.append(0)
 
         i=0
-        while(i<len(objs)):
-            if(objs[i].eLevel<10 and len(objs)>1):  # death by starvation
+        while(i<len(objs) and len(objs)>0):
+            if(objs[i].eLevel<.01*objs[i].eMax):  # death by starvation
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,1])
                 sDeath += 1
 
                 del objs[i]
                 i -= 1
 
-            elif(objs[i].rfd[0] == 1 and len(objs)>1): # death by predation
+            elif(objs[i].rfd[0] == 1): # death by predation
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,2])
                 if(objs[i].rfd[1]==1):
                     lDeath += 1
@@ -271,61 +317,73 @@ def draw():
                 del objs[i]
                 i -= 1
 
-            elif(objs[i].aAge > 10000 and len(objs)>1): # death due to aging
+            elif(objs[i].aAge >= 10 * oneYear): # death due to aging
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,3])
                 del objs[i]
                 i -= 1
 
                 
             else:
-                objs[i].move(i,r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim)  
+                objs[i].move(i,r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim, oneMeter, oneMinute)  
                 
                 if(showSim == 1):
                     objs[i].display(i)
 
                 objs[i].aAge += 1
                 totalFear += objs[i].fLevel
-                totalHunger += (1000 - objs[i].eLevel)
+                totalHunger += (eMax - objs[i].eLevel)
                 totalEnergy += objs[i].eLevel
             i += 1
 
         # modeling agent reproduction
-        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
+        if((frameCount-startOfSim+1)%fBreed==0 and popGrowth==1):   # fBreed: breeding frequency
             for i in range(len(objs)):
-                if(objs[i].eLevel > 300 and random.uniform(0,1) > .5):
+                if(objs[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
                     alpha = 2 * math.pi * random.uniform(0,1)
                     movement = 1
                     recentlySeenPredator = 0
                     threat = 0
                     aAge = 0
-                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), aAge, d, stim, alpha, movement, recentlySeenPredator, threat, 1000 * random.uniform(0,1), 0, [0,0], patch))
+                    maxSpeed = 10 * rsm
+                    eLevel = eMax * random.uniform(0,1)
+                    swf = 30
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
 
         # modelling predator reproduction
-        if((frameCount-startOfSim+1)%1000==0 and popGrowth==1):
+        if((frameCount-startOfSim+1)%fBreed==0 and popGrowth==1):
             for i in range(len(stim)):    
                 stim_aAge = 0
-                if(stim[i].type == 'leopard' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):       
+                if(stim[i].type == 'leopard' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):       
                     lx, ly = getInitialPredatorLocations(lRefuge)
-                    eLevel = int(1000 * random.uniform(0,1))
-                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, lx, ly, random.uniform(-3,3), random.uniform(-3,3), lRefuge, 0, 1000, eLevel))
+                    eLevel = eMax * random.uniform(0,1)
+                    lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
+                    lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
+                    swf = 14
+                    stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, lx, ly, lMaxSpeed, lOrient, lRefuge, oneDay, swf, eLevel, eMax))
                     n_leopard += 1
 
-                elif(stim[i].type == 'hawk' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):
+                elif(stim[i].type == 'hawk' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
                     hx, hy = getInitialPredatorLocations(hRefuge)
-                    eLevel = int(1000 * random.uniform(0,1))
-                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, hx, hy, random.uniform(-4,4), random.uniform(-4,4), hRefuge, 0, 1000, eLevel))
+                    eLevel = eMax * random.uniform(0,1)
+                    hMaxSpeed = 45 * rsm
+                    hOrient = 2 * math.pi * random.uniform(0,1)
+                    swf = 14
+                    stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, hx, hy, hMaxSpeed, hOrient, hRefuge, oneDay, swf, eLevel, eMax))
                     n_hawk += 1
 
-                elif(stim[i].type == 'python' and stim[i].eLevel > 300 and random.uniform(0,1) > .5):
+                elif(stim[i].type == 'python' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
                     px, py = getInitialPredatorLocations(pRefuge)
-                    eLevel = int(1000 * random.uniform(0,1))
-                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, px, py, random.uniform(-1.5,1.5), random.uniform(-1.5,1.5), pRefuge, 0, 1000, eLevel))
+                    eLevel = eMax * random.uniform(0,1)
+                    pMaxSpeed = .45 * rsm
+                    pOrient = 2 * math.pi * random.uniform(0,1)
+                    swf = 365
+                    stim.append(stimulus.stimulus(img3, 'python', stim_aAge, px, py, pMaxSpeed, pOrient, pRefuge, oneDay, swf, eLevel, eMax))
                     n_python += 1
 
         # represeting death
         x = 0
         while(x<len(deathLocation)):      
-            if(deathLocation[x][2]<20):    # represents recent death for 20 frames
+            if(deathLocation[x][2]<oneMinute):    # represents recent death for oneMinute equivalent frames
                 deathLocation[x][2] += 1
                 if(deathLocation[x][3]==1 and showSim == 1):    # death by starvation
                     fill(0)
@@ -345,8 +403,10 @@ def draw():
         
         # displaying simulation states live
         textSize(12)
-        text("Time Unit:",10,635)
-        text(frameCount-startOfSim+1,70,635)
+        text("Day: ",10,635)
+        frameNumber = frameCount-startOfSim+1
+        DayNumber = frameNumber/oneDay
+        text(DayNumber,35,635)
 
         fill(255,0,0)
         text("#Python:", .9*width + 5, 605)
@@ -543,3 +603,93 @@ def logData(output, startOfSim, data):
 def closeOutputFiles(f1):
     f1.flush()  # Writes the remaining data to the file
     f1.close()  # Finishes the file
+
+    
+def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r):
+    print "-----------------------------------------------------------------------"
+    print "frames per second: ", fps
+    
+    print "real time multiplier [s to s]: ", rtm
+
+    print "real distance multiplier [m to px]: ", rdm
+
+    print "maximum energy level: ", eMax
+    
+    print "maximum fear level: ", fMax
+        
+    rsm = rtm/ (rdm*fps) # real speed multiplier [m/s to px/frame]
+    print "real speed multiplier [m/s to px/frame]: ", rsm
+
+    oneSecond = fps/rtm # number of frames in a second
+    print "number of frames in one realtime second: ", oneSecond
+
+
+    oneMinute = 60*fps/rtm # number of frames in a minute
+    print "number of frames in a minute: ", oneMinute
+
+
+    oneHour = 3600*fps/rtm  # number of frames in a hour
+    print "number of frames in oneHour: ", oneHour
+
+    oneDay = 86400*fps/rtm  # number of frames in a day
+    print "number of frames in oneDay: ", oneDay
+
+
+    oneYear = 31536000*fps/rtm  # number of frames in a year
+    print "number of frames in oneYear: ", oneYear
+
+
+    oneMeter = 1/rdm    
+    print "number of px in oneMeter: ", oneMeter
+
+
+    oneKiloMeter = 1000*oneMeter  
+    print "number of px in oneKiloMeter: ", oneKiloMeter
+
+    #fBreed - conditioned in code
+    fBreed = oneYear
+    print "frequency(No. of frames) of Breeding = 1 year: ", fBreed
+
+    #age - conditioned in code
+    age = 10 * oneYear
+    print "Age of Death = 10 year (No. of frames): ", age
+
+    # Speed
+    lMaxSpeed = 15 * rsm
+    hMaxSpeed = 45 * rsm
+    pMaxSpeed = .45 * rsm
+    print "Max Speed (px/frame) - leopard, hawk, python: ", lMaxSpeed, hMaxSpeed, pMaxSpeed
+
+    # scanFreq - conditioned in code
+    scanFreq = scanFreq * oneMinute
+    print "scanFreq = ",scanFreq," (No. of frames)"
+
+    # decayRates
+    swf = 14
+    edr = eMax / (oneDay*swf) # energy decay rate (per frame)
+    fearDecayRate = fMax/(60*oneMinute)  # to be tuned - currently they remain in fear for 60 minutes
+    print "appx energy decay rate (per frame): ", edr
+    print "appx fear decay rate (per frame): ", fearDecayRate
+
+    # resource growth
+    growthPercentInOneFrame = growthRate/oneDay
+    growthInOneFrame = 255*growthPercentInOneFrame/100
+    print "growthInOneFrame when growthRate = ",growthRate,": ", growthInOneFrame
+
+    # resource consumption rate
+    consumptionFactor = .2 / oneHour
+    consumptionPerFrame = eMax * consumptionFactor
+    print "consumptionPerFrame at consumptionFactor = .2: ", consumptionPerFrame
+
+    # field of view - conditioned in code
+    print "field of view range (#px): ", r
+
+    # KillAttempt Distance - conditioned in code
+    predationDist = 10*oneMeter
+    print "KillAttempt Distance(#px): ", predationDist
+
+
+    # Area Dimensions
+    print "Dimensions in km: ", 650*rdm/1000, 1300*rdm/1000
+
+    print "-----------------------------------------------------------------------"

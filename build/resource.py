@@ -23,11 +23,13 @@ class resource(object):
             circle(x[j],y[j],5)
 
 
-    def regrow(self):
+    def regrow(self, oneDay, growthRate):
+        # assuming their growthRate% growth in 1 day
         x,y,rLevel = self.patchPoints # rLevel: resource level
         for j in range(len(rLevel)):
             if(rLevel[j]<255):
-                rLevel[j] += .5 # net growth of resource levels per frame
+                growthPercentInOneFrame = growthRate/oneDay
+                rLevel[j] += 255*growthPercentInOneFrame/100 # net growth of resource levels per frame 
                 if(rLevel[j]>255):
                     rLevel[j] = 255
         return x,y,rLevel
