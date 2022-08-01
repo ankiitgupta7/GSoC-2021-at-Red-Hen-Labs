@@ -42,7 +42,7 @@ def draw():
     global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
     global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge
     global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, showSim, dataFile
-    global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation
+    global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation, resourceRichness
     global rtm, rdm, rsm, fMax, eMax, fBreed, oneSecond, oneMinute, oneHour, oneDay, oneYear, growthRate, oneMeter
 
     eMax = 1000 # max energy level
@@ -160,6 +160,7 @@ def draw():
         fBreed = oneYear    # to be tuned
         scanFreq = scanFreq * oneMinute
         r = r * oneMeter
+        resourceRichness = 1
         
         # creating resource patches in the environment
         refuge = list()
@@ -167,7 +168,7 @@ def draw():
         patchSizeControl = 3*int(cp5.getController("# of Refuge").getValue())   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
         patchDensity = cp5.getController("P-Density").getValue()   # decides how densely (0,1) the patches (the squares) are arranged
 
-        refuge, patch = createResourceRefugePatch(patchSizeControl, patchDensity, refuge, patch)
+        refuge, patch = createResourceRefugePatch(patchSizeControl, patchDensity, refuge, patch, resourceRichness)
       
 
         # obtain co-ordinates and size of refuges to avoid for predators
@@ -233,7 +234,7 @@ def draw():
         startOfSim = frameCount # assigning the framenumber when simulation starts
         deathLocation = []  # to keep track of death of agents
 
-        showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r)
+        showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness)
 
     if(start==1):
         bc = color(114,81,48)
@@ -461,7 +462,7 @@ def isInsideRefuge(x,y,refuge):
 
 
 
-def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at each resource points generated for each patch
+def genPatchPoints(xRange, yRange, n, resourceRichness):  # generates initial resource levels at each resource points generated for each patch
     x0 = list()
     y0 = list()
     rLevel = list()
@@ -470,11 +471,11 @@ def genPatchPoints(xRange, yRange, n):  # generates initial resource levels at e
     for i in range(n):
         x0.append(random.uniform(x1, x2))
         y0.append(random.uniform(y1, y2))
-        rLevel.append(random.uniform(55,255))
+        rLevel.append(resourceRichness*random.uniform(0,255))   # resourceRichness is multiplier for richness of resource
     return x0, y0, rLevel     # returns lists of randomly generated points along with their resource level
 
 
-def createResourceRefugePatch(k, patchDensity, refuge, patch):
+def createResourceRefugePatch(k, patchDensity, refuge, patch, resourceRichness):
     tempX = .9*width/(2*k)    # because 10% of total width is taken by control panel
     tempY = height/k
     notEmptySpace = list()
@@ -492,10 +493,10 @@ def createResourceRefugePatch(k, patchDensity, refuge, patch):
 
     i = k
     while i<len(notEmptySpace):
-        patchPoints = genPatchPoints([notEmptySpace[i][0]-tempX/2,notEmptySpace[i][0]+tempX/2], [notEmptySpace[i][1]-tempY/2,notEmptySpace[i][1]+tempY/2], int(240/k))
+        patchPoints = genPatchPoints([notEmptySpace[i][0]-tempX/2,notEmptySpace[i][0]+tempX/2], [notEmptySpace[i][1]-tempY/2,notEmptySpace[i][1]+tempY/2], int(240/k), resourceRichness)
         patchX = notEmptySpace[i][0]
         patchY = notEmptySpace[i][1]
-        patch.append(resource.resource(patchX, patchY, patchPoints, tempX, tempY))  
+        patch.append(resource.resource(patchX, patchY, patchPoints, tempX, tempY, resourceRichness))  
         i+=1
 
     return refuge, patch
@@ -605,7 +606,7 @@ def closeOutputFiles(f1):
     f1.close()  # Finishes the file
 
     
-def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r):
+def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness):
     print "-----------------------------------------------------------------------"
     print "frames per second: ", fps
     
@@ -673,7 +674,7 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r):
 
     # resource growth
     growthPercentInOneFrame = growthRate/oneDay
-    growthInOneFrame = 255*growthPercentInOneFrame/100
+    growthInOneFrame = 255*resourceRichness*growthPercentInOneFrame/100
     print "growthInOneFrame when growthRate = ",growthRate,": ", growthInOneFrame
 
     # resource consumption rate

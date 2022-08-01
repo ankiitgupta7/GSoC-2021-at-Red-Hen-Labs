@@ -1,12 +1,13 @@
 import math
 import random
 class resource(object):
-    def __init__(self, patchX, patchY, patchPoints, tempX, tempY):
+    def __init__(self, patchX, patchY, patchPoints, tempX, tempY, resourceRichness):
         self.patchX = patchX
         self.patchY = patchY
         self.patchPoints = patchPoints
         self.tempX = tempX
         self.tempY = tempY
+        self.resourceRichness = resourceRichness
 
     # to display patches
     def display(self):
@@ -19,17 +20,19 @@ class resource(object):
 
         noStroke()
         for j in range(len(x)):
-            fill(rLevel[j],rLevel[j],0)
+            colorGradient = rLevel[j]/self.resourceRichness
+            fill(colorGradient,colorGradient,0)
             circle(x[j],y[j],5)
 
 
     def regrow(self, oneDay, growthRate):
         # assuming their growthRate% growth in 1 day
         x,y,rLevel = self.patchPoints # rLevel: resource level
+        rMax = 255*self.resourceRichness    # maximum possible value of resource level - rLevel
         for j in range(len(rLevel)):
-            if(rLevel[j]<255):
+            if(rLevel[j]<rMax):
                 growthPercentInOneFrame = growthRate/oneDay
-                rLevel[j] += 255*growthPercentInOneFrame/100 # net growth of resource levels per frame 
-                if(rLevel[j]>255):
-                    rLevel[j] = 255
+                rLevel[j] += rMax*growthPercentInOneFrame/100 # net growth of resource levels per frame 
+                if(rLevel[j]>rMax):
+                    rLevel[j] = rMax
         return x,y,rLevel

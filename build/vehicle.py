@@ -138,7 +138,8 @@ class vehicle(object):
 
         # return if there's no predators
         if len(self.stim)<1:
-            v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute)
+            if self.eLevel < .5 * self.eMax:
+                v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute)
             updateEnergyAndPosition(self, v, oneMinute, energyDecayRate)
             return
 
@@ -206,7 +207,7 @@ class vehicle(object):
         elif(self.fLevel>hLevel and self.threat>0 and checkhideout != self.threat):
             self.movement = 2
 
-
+        # scanning frequency is more while having higher order movements - 4 & 9 times when moving to refuge & avoiding predator resp. - to be tuned 
         scanFreq = int(scanFreq/self.movement**2)
 
                 
@@ -469,25 +470,28 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute):
     patchDist = width + height  # setting this as max value
     nearestPatch = 0 # dummy
     for i in range(0,len(patch)):
-        totalR, maxR = resourceData(patch[i])
-        if(patchDist>dist(patch[i].patchX,patch[i].patchY,x,y) and totalR/maxR>.1):
+        totalR, maxR = resourceData(patch[i], patch[i].resourceRichness)
+        # assign this patch only if it is atleast at 10% of it's maximum resource level - to be tuned
+        if(patchDist>dist(patch[i].patchX,patch[i].patchY,x,y) and totalR/maxR>.1): 
             patchDist = dist(patch[i].patchX,patch[i].patchY,x,y)
             nearestPatch = i
     
     alpha = orientAlpha(patch[nearestPatch].patchX,patch[nearestPatch].patchY,x,y)
-    totalR, maxR = resourceData(patch[nearestPatch])
+    totalR, maxR = resourceData(patch[nearestPatch], patch[nearestPatch].resourceRichness)
 
     if(patchDist > patch[nearestPatch].tempX/3):
         hLevel = self.eMax - eLevel
         vel = self.maxSpeed * hLevel / self.eMax
     else:
         vel = 0
-        if(eLevel<.9*self.eMax):
+        if(eLevel<.9*self.eMax):    # deprecated
             consumptionFactor = .2 / oneHour  # agent consumption per frame with 20% consumption of their eMax per hour   # to be tuned
             consumptionPerFrame = self.eMax * consumptionFactor
             eLevel += consumptionPerFrame
-            for i in range(maxR/255):   # number of resource points in the patch
-                patch[nearestPatch].patchPoints[2][i] -= consumptionPerFrame    # rLevel decreases with consumption
+            nPoints = maxR/(255*patch[nearestPatch].resourceRichness)   # number of resource points in the patch
+            for i in range(nPoints):   
+                # rLevel of each patchPoint equally decreases by (total consumption by agent/total patchPoints) per frame
+                patch[nearestPatch].patchPoints[2][i] -= consumptionPerFrame/nPoints    
 
     if(eLevel > self.eMax):
         eLevel = self.eMax
@@ -495,9 +499,9 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute):
     return vel, alpha, eLevel
 
 
-def resourceData(ithPatch):
+def resourceData(ithPatch, resourceRichness):
     d1,d2,rLevel = ithPatch.patchPoints
-    maxR = len(rLevel) * 255
+    maxR = len(rLevel) * 255 * resourceRichness
     totalR = 0
     for i in range(len(rLevel)):
         totalR += rLevel[i]
