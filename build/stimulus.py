@@ -30,8 +30,6 @@ class stimulus(object):
         rect(self.x-20,self.y-15,40,30)
         image(self.img,self.x-20,self.y-15,40,30)
         strokeWeight(1)
-        fill(0)
-        circle(self.x,self.y, 10)
 
     def location(self):
         return self.x,self.y

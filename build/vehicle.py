@@ -262,7 +262,7 @@ class vehicle(object):
         elif(self.movement == 2 and alarmPotency == 2):
             v, self.alpha = moveToRefuge(self, refuge, self.threat)
         elif(self.movement == 3):
-            v, self.alpha = moveToAvoid(self, closest)
+            v, self.alpha = moveToAvoidBV(self, closest)
 
 
         # disappearance of fear level
