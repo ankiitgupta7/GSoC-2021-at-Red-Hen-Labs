@@ -32,89 +32,6 @@ class vehicle(object):
         self.swf = swf # no. of days it can survive without food
         self.patch = patch  # details about each resource patch in the environment
 
-    def display(self, idNum):
-        self.displayMonkey(idNum)
-
-        noStroke()
-        fill(0)
-
-
-
-    def displayMonkey(self, idNum):  
-        sc = self.z    # calibrating scale
-        dispAngle = self.alpha - math.pi/6
-
-        # c_outline = color(int(255*(10000-self.aAge)/10000))
-
-
-        # # draw outline
-        # stroke(c_outline)
-        # strokeWeight(sc/3)
-        # noFill()
-        # circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 2*sc)    #eye1cover
-        # circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 2*sc)    #mouthcover
-        # circle(self.xpos + sc*math.cos(dispAngle + 7*math.pi/6), self.ypos + sc * math.sin(dispAngle + 7*math.pi/6), 2*sc)    #eye2cover
-        
-        # circle(self.xpos + 2.1 * sc * math.cos(dispAngle - math.pi/6), self.ypos + 2.1 * sc * math.sin(dispAngle - math.pi/6), sc)  #ear1
-        # circle(self.xpos + 2.1 * sc * math.cos(dispAngle + math.pi/2), self.ypos + 2.1 * sc * math.sin(dispAngle + math.pi/2), sc)  #ear2
-
-        # fill outline
-        noStroke()
-
-        colorGradient = 255*self.eLevel/self.eMax          
-        if(colorGradient > 255):
-            colorGradient = 255   
-        c = color(int(colorGradient)) 
-
-        fill(c) 
-
-        dispAngle = self.alpha - math.pi/6
-        circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 2*sc)    #eye1cover
-        circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 2*sc)    #mouthcover
-        circle(self.xpos + sc*math.cos(dispAngle + 7*math.pi/6), self.ypos + sc * math.sin(dispAngle + 7*math.pi/6), 2*sc)    #eye2cover
-        
-        strokeWeight(1)
-        stroke(0)
-        
-
-        # mouth
-        triangle(self.xpos + 0.5 * sc * math.cos(dispAngle + 11*math.pi/12), self.ypos + 0.5 * sc * math.sin(dispAngle + 11*math.pi/12), self.xpos + 0.5 * sc * math.cos(dispAngle + 17 * math.pi / 12), self.ypos + 0.5 * sc * math.sin(dispAngle + 17 * math.pi / 12), self.xpos + 1.1 * sc * math.cos(dispAngle + 7*math.pi/6), self.ypos + 1.1 * sc * math.sin(dispAngle + 7*math.pi/6))
-        
-        if self.movement == 3:
-            colorGradient = 255*self.fLevel/self.fMax
-            if(self.threat==1):
-                c_eyes = color(0,0,int(colorGradient))
-            elif(self.threat==2):
-                c_eyes = color(0,int(colorGradient),0)
-            elif(self.threat==3):
-                c_eyes = color(int(colorGradient),0,0)   
-            else:   # case where there's no threat but the vervet is still avoiding
-                c_eyes = c 
-
-            fill(c_eyes)
-            noStroke()
-            circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), 3*sc/4)    #eye1
-            circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), 3*sc/4)    #eye2
-
-
-        circle(self.xpos + sc*math.cos(dispAngle - math.pi/6), self.ypos + sc * math.sin(dispAngle - math.pi/6), sc/4)    #eye1
-        circle(self.xpos + sc*math.cos(dispAngle + math.pi/2), self.ypos + sc * math.sin(dispAngle + math.pi/2), sc/4)    #eye2
-
-        noStroke()
-        fill(c)
-        
-        if self.movement == 2:        
-            colorGradient = 255*self.fLevel/self.fMax
-            if(self.threat==1):
-                c = color(0,0,int(colorGradient))
-            elif(self.threat==2):
-                c = color(0,int(colorGradient),0)
-            elif(self.threat==3):
-                c = color(int(colorGradient),0,0)       
-            fill(c)
-
-        circle(self.xpos + 2.1 * sc * math.cos(dispAngle - math.pi/6), self.ypos + 2.1 * sc * math.sin(dispAngle - math.pi/6), sc)  #ear1
-        circle(self.xpos + 2.1 * sc * math.cos(dispAngle + math.pi/2), self.ypos + 2.1 * sc * math.sin(dispAngle + math.pi/2), sc)  #ear2
 
 
     def sensorLocation(self):
@@ -124,8 +41,7 @@ class vehicle(object):
         ey2 = self.ypos + self.z * math.sin((self.alpha - math.pi/6) + math.pi/2)
         return ex1, ey1, ex2, ey2
 
-
-    def move(self,idNum,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,showSim,oneMeter,oneMinute):
+    def move(self,idNum,r,fov,index,refuge,nAgents,alarmPotency,first2See,frameNumber,scanFreq,oneMeter,oneMinute,width,height):
         global v, alarm, alarms, _alarms
         v, alarm = 0, 0
         self.movement = 1 # default is to forage
@@ -139,7 +55,7 @@ class vehicle(object):
         # return if there's no predators
         if len(self.stim)<1:
             if self.eLevel < .5 * self.eMax:
-                v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute)
+                v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute, width, height)
             updateEnergyAndPosition(self, v, oneMinute, energyDecayRate)
             return
 
@@ -148,10 +64,10 @@ class vehicle(object):
 
         # checking any alarm call in the last frame
         if(len(_alarms)>0 and alarmPotency>0):
-            alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r)
+            alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r, width, height)
 
         # letting the closest predator to vervet attempt to kill
-        closest, closestDist = closestPredator(self)
+        closest, closestDist = closestPredator(self, width, height)
     
         # getting details of closest predator and setting up vervet awareness accordingly
         type = self.stim[closest].type    # type of predator
@@ -201,7 +117,7 @@ class vehicle(object):
             if(checkhideout!=alarm and hLevel<self.fLevel):
                 self.movement = 2
                 if(alarmPotency == 1):  # just to assign dummy alarm type
-                    v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
+                    v, self.alpha, self.threat = moveToNearestRefuge(self, refuge, width, height)
 
         # checking residual alarm in the vervets
         elif(self.fLevel>hLevel and self.threat>0 and checkhideout != self.threat):
@@ -217,7 +133,7 @@ class vehicle(object):
 
             # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuge
             # i.e. to check if agent can visually spot the stimulus [visual scan]
-            if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/PI,fov,x,y)):
+            if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/math.pi,fov,x,y)):
                 # getting alarmed about a predator (if agent is not in refuge) as it the vervet sees the predator
                 if(type == "leopard"):
                     if(checkhideout != 1):
@@ -250,17 +166,14 @@ class vehicle(object):
                     alarms.append(temp)   # storing alarm call data to be used in next frame
                     first2See[closest] = 1    # as this vervet is first to see the predator
 
-                    if showSim == 1:
-                        showAlarm(self, alarm, alarmPotency, auditoryAware)
-
 
         # Acting upon movement information
         if(self.movement == 1 and checkhideout != self.threat and self.eLevel < .5 * self.eMax):    # forage only if on less than half eLevel - to be tuned
-            v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute)
+            v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute, width, height)
         elif(self.movement == 2 and alarmPotency == 1):
-            v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
+            v, self.alpha, self.threat = moveToNearestRefuge(self, refuge, width, height)
         elif(self.movement == 2 and alarmPotency == 2):
-            v, self.alpha = moveToRefuge(self, refuge, self.threat)
+            v, self.alpha = moveToRefuge(self, refuge, self.threat, width, height)
         elif(self.movement == 3):
             v, self.alpha = moveToAvoidBV(self, closest)
 
@@ -300,41 +213,8 @@ def updateEnergyAndPosition(self, v, oneMinute, energyDecayRate):
     self.xpos = self.xpos + vx
     self.ypos = self.ypos + vy
 
-
-
-
-def showAlarm(self, alarm, alarmPotency, auditoryAware):
-    # representing undifferentiable alarm calls
-    if(alarmPotency == 1):
-        fill(0)
-        circle(self.xpos,self.ypos,10)
-        stroke(0)
-        noFill()
-        circle(self.xpos,self.ypos,2*auditoryAware)
-
-    # representing alarm calls visually in the environment
-    if(alarm == 1 and alarmPotency == 2):
-        fill(0)
-        circle(self.xpos,self.ypos,10)
-        stroke(0,0,255)
-        noFill()
-        circle(self.xpos,self.ypos,2*auditoryAware)
-    elif(alarm == 2 and alarmPotency == 2):
-        fill(0)
-        circle(self.xpos,self.ypos,10)
-        stroke(0,255,0)
-        noFill()
-        circle(self.xpos,self.ypos,2*auditoryAware)
-    elif(alarm == 3 and alarmPotency == 2):
-        fill(0)
-        circle(self.xpos,self.ypos,10)
-        stroke(255,0,0)
-        noFill()
-        circle(self.xpos,self.ypos,2*auditoryAware)
-    noStroke()
-
 # returns the index of closest predator to an agent
-def closestPredator(self):
+def closestPredator(self, width, height):
     m = len(self.stim)
     closest = 0
     closestDist = width + height
@@ -356,7 +236,7 @@ def threatRefugeInfo(self, refuge):
 
     return refugeInfo
 
-def getClosestRefuge(self, refugeLocations):
+def getClosestRefuge(self, refugeLocations, width, height):
     closest = 0
     closestDist = width + height
     for i in range(len(refugeLocations)):
@@ -370,10 +250,10 @@ def getClosestRefuge(self, refugeLocations):
 
 
 # a funtion to orient towards refuge when the agent is alarmed
-def moveToRefuge(self, refuge, alarm):
+def moveToRefuge(self, refuge, alarm, width, height):
 
     relevantRefuges = threatRefugeInfo(self, refuge)
-    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, relevantRefuges)
+    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, relevantRefuges, width, height)
     closestRefugeX, closestRefugeY = closestRefuge
     orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
 
@@ -385,9 +265,9 @@ def moveToRefuge(self, refuge, alarm):
 
     return velocity, orienation
 
-def moveToNearestRefuge(self, refuge):
+def moveToNearestRefuge(self, refuge, width, height):
 
-    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, refuge)
+    refugeCode, closestRefuge, closestRefugeDist, refugeSize = getClosestRefuge(self, refuge, width, height)
     closestRefugeX, closestRefugeY = closestRefuge
     orienation = orientAlpha(closestRefugeX, closestRefugeY,self.xpos, self.ypos)
 
@@ -405,6 +285,7 @@ def moveToAvoid(self,closest): # to guide vervets
     self.alpha = math.pi + orientAlpha(x,y,self.xpos,self.ypos)
     vel = self.maxSpeed * self.fLevel / self.fMax
     return vel, self.alpha
+
 
 
 # a function to respond to predator
@@ -449,7 +330,7 @@ def moveToAvoidBV(self,closest):
     return v, self.alpha
 
 
-def checkAlarmCall(x,y,alarms,r):
+def checkAlarmCall(x,y,alarms,r,width,height):
     alarmIndex = 0
     alarmDist = width + height
     for i in range(len(alarms)):
@@ -465,7 +346,7 @@ def checkAlarmCall(x,y,alarms,r):
     return 0
 
 
-def moveToForage(self,x,y,patch,eLevel, oneMinute):
+def moveToForage(self,x,y,patch,eLevel, oneMinute, width, height):
     oneHour = 60 * oneMinute
     patchDist = width + height  # setting this as max value
     nearestPatch = 0 # dummy
@@ -488,7 +369,7 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute):
             consumptionFactor = .2 / oneHour  # agent consumption per frame with 20% consumption of their eMax per hour   # to be tuned
             consumptionPerFrame = self.eMax * consumptionFactor
             eLevel += consumptionPerFrame
-            nPoints = maxR/(255*patch[nearestPatch].resourceRichness)   # number of resource points in the patch
+            nPoints = int(maxR/(255*patch[nearestPatch].resourceRichness))   # number of resource points in the patch
             for i in range(nPoints):   
                 # rLevel of each patchPoint equally decreases by (total consumption by agent/total patchPoints) per frame
                 patch[nearestPatch].patchPoints[2][i] -= consumptionPerFrame/nPoints    
@@ -529,9 +410,9 @@ def orientAlpha(x0,y0,x,y): # returns alpha at x,y oriented towards x0,y0
         if(h>0 and b>0):
             return math.atan(h/b)
         if(b<0):
-            return math.atan(h/b) + PI
+            return math.atan(h/b) + math.pi
         if(h<0 and b>0):
-            return math.atan(h/b) + 2*PI
+            return math.atan(h/b) + 2*math.pi
 
 def isInsideFoV(x0,y0,r,alpha,theta,x,y):
     # x0,y0: point of view
@@ -539,8 +420,8 @@ def isInsideFoV(x0,y0,r,alpha,theta,x,y):
     # alpha: agent orientation
     # theta: scope angle of view
     # r: distance that agent can see
-    la = PI*(alpha+theta/2)/180 # anglular co-ordinate of left extreme FoV
-    ra = PI*(alpha-theta/2)/180 # anglular co-ordinate of right extreme FoV
+    la = math.pi*(alpha+theta/2)/180 # anglular co-ordinate of left extreme FoV
+    ra = math.pi*(alpha-theta/2)/180 # anglular co-ordinate of right extreme FoV
     # co-ordinates of extreme left and right points of FoV
     xr  = x0 + r*math.cos(la)
     yr  = y0 + r*math.sin(la)
@@ -569,5 +450,5 @@ def isInsideFoV(x0,y0,r,alpha,theta,x,y):
         return 0
 
 def dist(x,y,sx,sy):
-    return sqrt((x-sx)**2+(y-sy)**2)
+    return math.sqrt((x-sx)**2+(y-sy)**2)
 

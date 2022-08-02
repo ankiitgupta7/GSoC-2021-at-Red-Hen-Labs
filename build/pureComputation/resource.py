@@ -9,22 +9,6 @@ class resource(object):
         self.tempY = tempY
         self.resourceRichness = resourceRichness
 
-    # to display patches
-    def display(self):
-        fill(0,189,135)
-        #circle(self.patchX,self.patchY,5)
-        noFill()
-        stroke(0,189,135)
-      #  rect(self.patchX - self.tempX/2 , self.patchY - self.tempY/2, self.tempX, self.tempY)
-        x,y,rLevel = self.patchPoints # rLevel: resource level
-
-        noStroke()
-        for j in range(len(x)):
-            colorGradient = rLevel[j]/self.resourceRichness
-            fill(colorGradient,colorGradient,0)
-            circle(x[j],y[j],5)
-
-
     def regrow(self, oneDay, growthRate):
         # assuming their growthRate% growth in 1 day
         x,y,rLevel = self.patchPoints # rLevel: resource level
