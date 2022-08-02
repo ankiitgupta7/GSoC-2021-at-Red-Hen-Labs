@@ -2,7 +2,6 @@ import random
 import math
 import vehicle_tools  as tools
 import stimulus
-import resource
 
 alarm = 0
 
@@ -369,7 +368,7 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute, width, height):
             consumptionFactor = .2 / oneHour  # agent consumption per frame with 20% consumption of their eMax per hour   # to be tuned
             consumptionPerFrame = self.eMax * consumptionFactor
             eLevel += consumptionPerFrame
-            nPoints = int(maxR/(255*patch[nearestPatch].resourceRichness))   # number of resource points in the patch
+            nPoints = int(maxR//(255*patch[nearestPatch].resourceRichness))   # number of resource points in the patch
             for i in range(nPoints):   
                 # rLevel of each patchPoint equally decreases by (total consumption by agent/total patchPoints) per frame
                 patch[nearestPatch].patchPoints[2][i] -= consumptionPerFrame/nPoints    

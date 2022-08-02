@@ -2,7 +2,7 @@ import random
 import math
 import stimulus
 import vehicle
-import resource
+import resourcePatch
 
 import datetime
 import os
@@ -22,7 +22,7 @@ Path(savePath).mkdir(parents=True, exist_ok=True)
 D = 650 # canvas dimensions
 fps = 60    # number of desired frames per second
 start = 0
-endSim = 1000
+endSim = 100
 
 def runSim(endSim):
     count = 1
@@ -268,13 +268,14 @@ def runSim(endSim):
         count += 1
 
     print("count=",count)
-    #print(simData)
 
     with open(savePath+"/diffAlarm.csv","w+", newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
         header = ["Time Unit","Vervet Population","Leopard Population","Hawk Population","Python Population","Predator Population","Deaths due to Leopard","Deaths due to Hawk","Deaths due to Python","Total Predation Deaths","Starvation Deaths","Average Fear Level","Average Hunger Level","Average Energy Level"]
         writer.writerow(header)
         writer.writerows(simData)
+
+    return simData
     
 
 
@@ -338,7 +339,7 @@ def createResourceRefugePatch(k, patchDensity, refuge, patch, resourceRichness, 
         patchPoints = genPatchPoints([notEmptySpace[i][0]-tempX/2,notEmptySpace[i][0]+tempX/2], [notEmptySpace[i][1]-tempY/2,notEmptySpace[i][1]+tempY/2], int(240/k), resourceRichness)
         patchX = notEmptySpace[i][0]
         patchY = notEmptySpace[i][1]
-        patch.append(resource.resource(patchX, patchY, patchPoints, tempX, tempY, resourceRichness))  
+        patch.append(resourcePatch.resourcePatch(patchX, patchY, patchPoints, tempX, tempY, resourceRichness))  
         i+=1
 
     return refuge, patch
@@ -448,4 +449,6 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
 
 
     
-runSim(endSim)
+simData = runSim(endSim)
+
+print(len(simData))

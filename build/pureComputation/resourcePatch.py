@@ -1,6 +1,6 @@
 import math
 import random
-class resource(object):
+class resourcePatch(object):
     def __init__(self, patchX, patchY, patchPoints, tempX, tempY, resourceRichness):
         self.patchX = patchX
         self.patchY = patchY
