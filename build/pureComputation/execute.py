@@ -18,13 +18,9 @@ savePath = "./data/"+str(now)
 
 Path(savePath).mkdir(parents=True, exist_ok=True)
 
-
-D = 650 # canvas dimensions
-fps = 60    # number of desired frames per second
 start = 0
-endSim = 100
 
-def runSim(endSim):
+def runSim(endSim, simParam):
     count = 1
     simData = []
     while count<=endSim:
@@ -34,33 +30,37 @@ def runSim(endSim):
         global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation, resourceRichness
         global rtm, rdm, rsm, fMax, eMax, fBreed, oneSecond, oneMinute, oneHour, oneDay, oneYear, growthRate, oneMeter
 
-        width = 2*D
-        height = D
         eMax = 1000 # max energy level
         fMax = 1000 # max fear level
 
         if count == 1:    # setting up control panel on executing run.py
             print("No control panel for the time being, but you may use console or use tKinter later")
+
         # triggering start / restart of simulation on clicking the "Run" button on control panel
         if count == 1:
             stim = list()  # creating an array of stimulus
             sDeath, prDeath, lDeath, hDeath, pDeath = 0, 0, 0, 0, 0 # to help in death data logging
 
+            fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate = simParam
+
+            width = simAreaParam
+            height = simAreaParam
+
             # feeding panel (default or altered) input into code
-            n1 = 2
-            n2 = 2
-            n3 = 2
+            n1 = n_predator
+            n2 = n_predator
+            n3 = n_predator
             n_leopard, n_hawk, n_python = n1, n2, n3
-            n = 100 # initial number of agents at the start of simulation
-            d = 9  # accessing agent size scaling parameter
-            r = 50   # radius of field of view
-            fov = 240    # angle of filed of view
-            alarmPotency = 2 # alarm conditions
-            popGrowth = 1   # option of reproduction
-            scanFreq = 2   # visual scan frequency
-            rtm = 1   # real time multipier    [/second to /frame]
-            rdm = 1   # real distance multipier   [meter to px] 
-            growthRate = 3   # resource % growth in a day
+            n = n_vervet # initial number of agents at the start of simulation
+            d = vervet_size  # accessing agent size scaling parameter
+            r = radiusFOV   # radius of field of view
+            fov = angleFOV    # angle of filed of view
+            alarmPotency = alarmPotency # alarm conditions
+            popGrowth = popGrowth   # option of reproduction - 0 or 1
+            # scanFreq = scanFreq   # visual scan frequency - minutes
+            rtm = timeScale   # real time multipier    [/second to /frame]
+            rdm = spaceScale  # real distance multipier   [meter to px] 
+            growthRate = resourceGrowthRate   # resource % growth in a day
 
             rsm = rtm/float(rdm*fps) # real speed multiplier [m/s to px/frame]
 
@@ -143,7 +143,7 @@ def runSim(endSim):
             startOfSim = count # assigning the framenumber when simulation starts
             deathLocation = []  # to keep track of death of agents
 
-            showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness)
+            showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness, simAreaParam)
 
         if(start==1):
             # processing predators - death, movement & display
@@ -358,7 +358,7 @@ def avoidRefugeLocations(avoidRefugeCode, refuge):
 
 
     
-def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness):
+def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness, D):
     print("-----------------------------------------------------------------------")
     print ("frames per second: ", fps)
     
@@ -443,12 +443,24 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
 
 
     # Area Dimensions
-    print ("Dimensions in km: ", 650*rdm/1000, 1300*rdm/1000)
+    print ("Dimensions in km: ", D/1000, D/1000)
 
     print ("-----------------------------------------------------------------------")
 
 
-    
-simData = runSim(endSim)
+def getParam():
+    fps = 60
+    vervet_size = 6
+    simAreaParam = 1000
+    n_predator = 2
+    n_vervet = 100
+    radiusFOV = 50
+    angleFOV = 200
+    alarmPotency = 2
+    popGrowth = 1
+    scanFreq, timeScale, spaceScale, resourceGrowthRate = 2, 60, 1, 3
+    return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
 
-print(len(simData))
+# endSim = 10
+# simParam = getParam()
+# runSim(endSim, simParam)

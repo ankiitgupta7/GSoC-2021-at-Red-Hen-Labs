@@ -123,9 +123,9 @@ class vehicle(object):
             self.movement = 2
 
         # scanning frequency is more while having higher order movements - 4 & 9 times when moving to refuge & avoiding predator resp. - to be tuned 
-        scanFreq = int(scanFreq/self.movement**2)
+        scanFreq = int(scanFreq//self.movement**2)
 
-                
+        
         # visual periodic scan of environment 
         if(frameNumber % scanFreq == 0):   # scanning begins
             self.eLevel -= 2*energyDecayRate   # cost of scanning - double than usual energyDecayRate - to be tuned
