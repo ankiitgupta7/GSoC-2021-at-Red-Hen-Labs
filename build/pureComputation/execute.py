@@ -5,18 +5,16 @@ import vehicle
 import resourcePatch
 
 import datetime
+import time
 import os
 import csv
 
 from pathlib import Path
 
-now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
 
 Path("./data").mkdir(parents=True, exist_ok=True)
 
-savePath = "./data/"+str(now)
 
-Path(savePath).mkdir(parents=True, exist_ok=True)
 
 start = 0
 
@@ -33,8 +31,8 @@ def runSim(endSim, simParam):
         eMax = 1000 # max energy level
         fMax = 1000 # max fear level
 
-        if count == 1:    # setting up control panel on executing run.py
-            print("No control panel for the time being, but you may use console or use tKinter later")
+        # if count == 1:    # setting up control panel on executing run.py
+        #     print("No control panel for the time being, but you may use console or use tKinter later")
 
         # triggering start / restart of simulation on clicking the "Run" button on control panel
         if count == 1:
@@ -143,7 +141,7 @@ def runSim(endSim, simParam):
             startOfSim = count # assigning the framenumber when simulation starts
             deathLocation = []  # to keep track of death of agents
 
-            showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness, simAreaParam)
+        #    showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness, simAreaParam)
 
         if(start==1):
             # processing predators - death, movement & display
@@ -262,22 +260,17 @@ def runSim(endSim, simParam):
                         n_python += 1
 
             # to log data specific to each frame
-            tempData = [count, len(objs), n_leopard, n_hawk, n_python, len(stim), lDeath, hDeath, pDeath, prDeath, sDeath, totalFear/len(objs), totalHunger/len(objs), totalEnergy/len(objs)]
-            simData.append(tempData)
+            if len(objs)>0:
+                tempData = [count, len(objs), n_leopard, n_hawk, n_python, len(stim), lDeath, hDeath, pDeath, prDeath, sDeath, totalFear/len(objs), totalHunger/len(objs), totalEnergy/len(objs)]
+                simData.append(tempData)
+            else:
+                return simData
 
         count += 1
 
-    print("count=",count)
-
-    with open(savePath+"/diffAlarm.csv","w+", newline='', encoding='utf-8') as f:
-        writer = csv.writer(f)
-        header = ["Time Unit","Vervet Population","Leopard Population","Hawk Population","Python Population","Predator Population","Deaths due to Leopard","Deaths due to Hawk","Deaths due to Python","Total Predation Deaths","Starvation Deaths","Average Fear Level","Average Hunger Level","Average Energy Level"]
-        writer.writerow(header)
-        writer.writerows(simData)
+    # print("count=",count)
 
     return simData
-    
-
 
 def dist(x,y,sx,sy):
     return math.sqrt((x-sx)**2+(y-sy)**2)
@@ -449,7 +442,9 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
 
 
 def getParam():
-    fps = 60
+    eMax = 1000
+    fMax = 1000
+    fps = 2000
     vervet_size = 6
     simAreaParam = 1000
     n_predator = 2
@@ -458,9 +453,90 @@ def getParam():
     angleFOV = 200
     alarmPotency = 2
     popGrowth = 1
-    scanFreq, timeScale, spaceScale, resourceGrowthRate = 2, 60, 1, 3
+    scanFreq = 2
+    timeScale = .5*fps
+    spaceScale = 1
+    resourceGrowthRate = 3
     return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
+ 
+def getParamRange():
+    fps = [1]
+    vervet_size = [6]
+    simAreaParam = [1000]
+    n_predator = [1,2,3]
+    n_vervet = [10, 20, 50, 100]
+    radiusFOV = [50]
+    angleFOV = [200]
+    alarmPotency = [0,1,2]
+    popGrowth = [1]
+    scanFreq = [1,2,5]
+    timeScale = [.5*fps[0]]
+    spaceScale = [1]
+    resourceGrowthRate = [1,2,3]
+    return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
+ 
+def getParamList(x):
+    doneCount = 0
+    params = []
+    
+    while doneCount<1000*len(x):
+        simParam = []
+        for i in range(len(x)):
+            simParam.append(x[i][math.floor(random.uniform(0,len(x[i])))])
+            i += 1
+        params.append(simParam)
+        doneCount += 1
 
-# endSim = 10
-# simParam = getParam()
-# runSim(endSim, simParam)
+    # remove duplicates
+    paramList = []
+    for i in params:
+        if i not in paramList:
+            paramList.append(i)
+
+    print(len(paramList))
+    return sorted(paramList, key=lambda x : x[7])
+
+def saveSimData(simData, savePath): 
+    Path(savePath).mkdir(parents=True, exist_ok=True)
+    with open(savePath+"/simData.csv","w+", newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        header = ["Time Unit","Vervet Population","Leopard Population","Hawk Population","Python Population","Predator Population","Deaths due to Leopard","Deaths due to Hawk","Deaths due to Python","Total Predation Deaths","Starvation Deaths","Average Fear Level","Average Hunger Level","Average Energy Level"]
+        writer.writerow(header)
+        writer.writerows(simData)
+
+def saveSimDetails(simParam, savePath):
+    Path(savePath).mkdir(parents=True, exist_ok=True)
+    with open(savePath+"/simParams.csv","w+", newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        header = ["fps", "simAreaParam", "n_predator", "n_vervet", "vervet_size", "radiusFOV", "angleFOV", "alarmPotency", "popGrowth", "scanFreq", "timeScale", "spaceScale", "resourceGrowthRate"]
+        writer.writerow(header)
+        writer.writerow(simParam)
+
+
+def runMultipleSims():
+    print("Please enter number of iterations for each simulation: ")
+    endSim = int(input())
+
+    startTime = time.time()
+
+    paramRange = getParamRange()
+
+    paramList = getParamList(paramRange)
+
+    now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
+    simSavePath = "./data/"+str(now)
+    Path(simSavePath).mkdir(parents=True, exist_ok=True)
+
+    for i in range(len(paramList)):
+        simData = runSim(endSim, paramList[i])
+        savePath = simSavePath+"/sim"+str(i)+"Alarm"+str(paramList[i][7])
+        saveSimDetails(paramList[i], savePath)
+        saveSimData(simData, savePath)
+
+    endTime = time.time()
+    timeElapsed = endTime - startTime
+
+    print("timeElapsed, runSpeed (iteration per second): ", timeElapsed, len(paramList)*endSim/timeElapsed)
+
+
+runMultipleSims()
