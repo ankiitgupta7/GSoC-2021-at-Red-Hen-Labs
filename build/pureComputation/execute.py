@@ -440,31 +440,12 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
 
     print ("-----------------------------------------------------------------------")
 
-
-def getParam():
-    eMax = 1000
-    fMax = 1000
-    fps = 2000
-    vervet_size = 6
-    simAreaParam = 1000
-    n_predator = 2
-    n_vervet = 100
-    radiusFOV = 50
-    angleFOV = 200
-    alarmPotency = 2
-    popGrowth = 1
-    scanFreq = 2
-    timeScale = .5*fps
-    spaceScale = 1
-    resourceGrowthRate = 3
-    return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
- 
 def getParamRange():
     fps = [1]
     vervet_size = [6]
     simAreaParam = [1000]
     n_predator = [1,2,3]
-    n_vervet = [10, 20, 50, 100]
+    n_vervet = [10, 20, 50]
     radiusFOV = [50]
     angleFOV = [200]
     alarmPotency = [0,1,2]
@@ -472,7 +453,7 @@ def getParamRange():
     scanFreq = [1,2,5]
     timeScale = [.5*fps[0]]
     spaceScale = [1]
-    resourceGrowthRate = [1,2,3]
+    resourceGrowthRate = [3]
     return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
  
 def getParamList(x):
@@ -513,15 +494,40 @@ def saveSimDetails(simParam, savePath):
         writer.writerow(simParam)
 
 
-def runMultipleSims():
-    print("Please enter number of iterations for each simulation: ")
-    endSim = int(input())
+    
+def showTimeConversion(fps, rtm):
+    print("-----------------------------------------------------------------------")
+        
+    oneHour = 3600*fps/rtm  # number of frames in a hour
+    print ("number of frames in oneHour: ", oneHour)
 
+    oneDay = 86400*fps/rtm  # number of frames in a day
+    print ("number of frames/iterations required for oneDay: ", oneDay)
+
+
+    oneYear = 31536000*fps/rtm  # number of frames in a year
+    print ("number of frames/iterations required for oneYear: ", oneYear)
+
+    #age - conditioned in code
+    age = 10 * oneYear
+    print ("number of frames/iterations required for 10 years: ", age)
+
+
+    print ("-----------------------------------------------------------------------")
+
+
+def runMultipleSims():
     startTime = time.time()
 
     paramRange = getParamRange()
 
     paramList = getParamList(paramRange)
+    
+    showTimeConversion(paramList[0][0],paramList[0][10])
+
+    print("Please enter number of iterations (of time equivalent) to run for each condition: ")
+    endSim = 100
+
 
     now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
     simSavePath = "./data/"+str(now)
