@@ -1,10 +1,10 @@
 #!/bin/bash
-
-#SBATCH -o test.o%j
-#SBATCH --time=00:30:00      # 20 minutes of wall time
+#SBATCH --time=00:20:00      # 20 minutes of wall time
 #SBATCH -N 1                 # 1 Node
 #SBATCH -n 1                 # 1 processor
 #SBATCH -mem=2gb             # Assign 2gb memory; default in 1gb
+#SBATCH -o /scratch/users/axg1218/output%A_%a.o
+
 
 module load python
 
