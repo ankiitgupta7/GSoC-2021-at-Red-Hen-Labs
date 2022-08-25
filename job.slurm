@@ -3,7 +3,7 @@
 #SBATCH -N 1                 # 1 Node
 #SBATCH -n 1                 # 1 processor
 #SBATCH -mem=2gb             # Assign 2gb memory; default in 1gb
-#SBATCH -o /scratch/users/axg1218/output%A_%a.o
+#SBATCH -o /scratch/users/axg1218/output%A.o
 
 
 module load python
