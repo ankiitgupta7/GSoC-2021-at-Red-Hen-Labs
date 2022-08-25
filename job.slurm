@@ -3,7 +3,7 @@
 #SBATCH -c 1 
 #SBATCH --mem-per-cpu=1G 
 #SBATCH --time=0-00:15:00 # 15 minutes 
-#SBATCH --output= job_slurm.log
+#SBATCH --output=my.stdout 
 #SBATCH --mail-user=axg1218@case.edu 
 #SBATCH --mail-type=ALL 
 #SBATCH --job-name="test" 
