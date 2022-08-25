@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --time=00:20:00      # 20 minutes of wall time
-#SBATCH -N 1                 # 1 Node
-#SBATCH -n 1                 # 1 processor
-#SBATCH -mem=2gb             # Assign 2gb memory; default in 1gb
+#SBATCH --time=00:20:00      
+#SBATCH -N 1                 
+#SBATCH -n 1                 
+#SBATCH -mem=2gb             
 
 
 module load python
