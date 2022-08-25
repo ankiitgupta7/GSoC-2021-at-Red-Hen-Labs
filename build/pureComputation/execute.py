@@ -474,7 +474,7 @@ def getParamList(x):
         if i not in paramList:
             paramList.append(i)
 
-    print(len(paramList))
+    print("total ", len(paramList), " input parameter sets to execute")
     return sorted(paramList, key=lambda x : x[7])
 
 def saveSimData(simData, savePath): 

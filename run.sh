@@ -3,7 +3,8 @@
 SCRATCH_USER=/scratch/users/axg1218
 ROOT_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs
 TOOL_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs/build/pureComputation
-HOME_FOLDER=/home/axg1218/mnt/rds/redhen/gallina/home/axg1218
+HOME_FOLDER=/mnt/rds/redhen/gallina/home/axg1218
+DATA_DUMP_GALLINA = $HOME_FOLDER/data
 
 # Load Module
 module load python
@@ -16,10 +17,10 @@ cd $SCRATCH_USER
 
 cd $TOOL_FOLDER
 
-python3 execute.py
+python3 execute.py 
 
 # Copy the data generated to home
-cp -r $TOOL_FOLDER/data/ $HOME_FOLDER
+cp -r $TOOL_FOLDER/data/. $DATA_DUMP_GALLINA
 echo "data generated copied to home"
 
 cd $SCRATCH_USER/ 
