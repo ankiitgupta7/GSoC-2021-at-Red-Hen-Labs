@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH -N 1 
+#SBATCH -N 2 
 #SBATCH -c 1 
-#SBATCH -n 12
+#SBATCH -n 6
 #SBATCH --mem-per-cpu=120G 
 #SBATCH --time=0-00:45:00 # 45 minutes 
 #SBATCH --output=my.stdout 
