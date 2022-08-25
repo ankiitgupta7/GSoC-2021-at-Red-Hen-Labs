@@ -14,7 +14,7 @@ SCRATCH_USER=/scratch/users/axg1218
 ROOT_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs
 TOOL_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs/build/pureComputation
 HOME_FOLDER=/mnt/rds/redhen/gallina/home/axg1218
-DATA_DUMP_GALLINA = $HOME_FOLDER/data
+DATA_DUMP_GALLINA=$HOME_FOLDER/data
 
 # Load Module
 module load python
