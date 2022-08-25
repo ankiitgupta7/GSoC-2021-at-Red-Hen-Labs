@@ -1,8 +1,9 @@
 #!/bin/bash
 #SBATCH -N 1 
 #SBATCH -c 1 
-#SBATCH --mem-per-cpu=1G 
-#SBATCH --time=0-00:15:00 # 15 minutes 
+#SBATCH -n 12
+#SBATCH --mem-per-cpu=120G 
+#SBATCH --time=0-00:45:00 # 45 minutes 
 #SBATCH --output=my.stdout 
 #SBATCH --mail-user=axg1218@case.edu 
 #SBATCH --mail-type=ALL 

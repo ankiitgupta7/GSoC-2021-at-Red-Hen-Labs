@@ -444,13 +444,13 @@ def getParamRange():
     fps = [1]
     vervet_size = [6]
     simAreaParam = [1000]
-    n_predator = [1,2,3]
-    n_vervet = [10, 20, 50]
+    n_predator = [1,2]
+    n_vervet = [10, 50]
     radiusFOV = [50]
     angleFOV = [200]
     alarmPotency = [0,1,2]
     popGrowth = [1]
-    scanFreq = [1,2,5]
+    scanFreq = [2,5]
     timeScale = [.5*fps[0]]
     spaceScale = [1]
     resourceGrowthRate = [3]
@@ -526,7 +526,7 @@ def runMultipleSims():
    # showTimeConversion(paramList[0][0],paramList[0][10])
 
    # print("Please enter number of iterations (of time equivalent) to run for each condition: ")
-    endSim = 100
+    endSim = 7200
 
 
     now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
