@@ -523,10 +523,10 @@ def runMultipleSims():
 
     paramList = getParamList(paramRange)
     
-    showTimeConversion(paramList[0][0],paramList[0][10])
+   # showTimeConversion(paramList[0][0],paramList[0][10])
 
-    print("Please enter number of iterations (of time equivalent) to run for each condition: ")
-    endSim = int(input())
+   # print("Please enter number of iterations (of time equivalent) to run for each condition: ")
+    endSim = 100
 
 
     now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
