@@ -1,14 +1,14 @@
 #!/bin/bash
-#SBATCH -N 2 
+#SBATCH -N 1 
 #SBATCH -c 1 
 #SBATCH -n 6
+
 #SBATCH --mem-per-cpu=120G 
 #SBATCH --time=0-00:45:00 # 45 minutes 
 #SBATCH --output=my.stdout 
 #SBATCH --mail-user=axg1218@case.edu 
 #SBATCH --mail-type=ALL 
 #SBATCH --job-name="test" 
-
 
 
 SCRATCH_USER=/scratch/users/axg1218
