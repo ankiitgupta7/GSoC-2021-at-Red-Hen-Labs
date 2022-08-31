@@ -12,8 +12,8 @@
 
 
 SCRATCH_USER=/scratch/users/axg1218
-ROOT_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs
-TOOL_FOLDER=$SCRATCH_USER/Google-Summer-of-Code-at-Red-Hen-Labs/build/pureComputation
+ROOT_FOLDER=$SCRATCH_USER/pureComputation
+TOOL_FOLDER=$SCRATCH_USER/pureComputation
 HOME_FOLDER=/mnt/rds/redhen/gallina/home/axg1218
 DATA_DUMP_GALLINA=$HOME_FOLDER/data
 
