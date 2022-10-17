@@ -68,7 +68,7 @@ def draw():
         pToggle.setPosition(.9*width,10).setSize(20,10).setRange(0, 1).setValue(1).setNumberOfTickMarks(2).setSliderMode(Slider.FLEXIBLE)
         
         pToggle = cp5.addSlider("Scan Freq")
-        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(2, 20).setValue(2).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        pToggle.setPosition(.9*width,35).setSize(60,10).setRange(2, 20).setValue(18).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
         
         textSize(10)
         text("# of Stimulus", .9*width, 75)
@@ -105,7 +105,7 @@ def draw():
 
 
         tScale = cp5.addSlider("Time Scale")
-        tScale.setPosition(.9*width,360).setSize(60,10).setRange(10, 100).setValue(10).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        tScale.setPosition(.9*width,360).setSize(60,10).setRange(1000, 100000).setValue(5000).setNumberOfTickMarks(100).setSliderMode(Slider.FLEXIBLE)
 
 
         sScale = cp5.addSlider("Space Scale")
@@ -148,17 +148,17 @@ def draw():
         rdm = cp5.getController("Space Scale").getValue()   # real distance multipier   [meter to px] 
         growthRate = cp5.getController("rGrowth%").getValue()   # resource % growth in a day
 
-        rsm = rtm/(rdm*fps) # real speed multiplier [m/s to px/frame]
+        rsm = 10/(rdm*fps) # real speed multiplier [m/s to px/frame] - rtm omitted purposefully
         oneSecond = fps/rtm # number of frames in a second
         oneMinute = 60*oneSecond # number of frames in a minute
-        oneHour = 60*oneMinute  # number of frames in a hour
-        oneDay = 24*oneHour  # number of frames in a day
-        oneYear = 365*oneDay  # number of frames in a year
+        oneHour = math.ceil(60*oneMinute)  # number of frames in a hour
+        oneDay = math.ceil(24*oneHour)  # number of frames in a day
+        oneYear = math.ceil(365*oneDay)  # number of frames in a year
         oneMeter = 1/rdm
 
 
         fBreed = oneYear    # to be tuned
-        scanFreq = scanFreq * oneMinute
+        scanFreq = math.ceil(scanFreq * oneMinute)
         r = r * oneMeter
         resourceRichness = 1
         
@@ -432,7 +432,7 @@ def draw():
         # revoke simulation data saving
         if((frameCount-startOfSim+1) == 30000 and saveData == 1):
             closeOutputFiles(dataFile)
-            print("Data has been saved for 500000 frames.")
+            print("Data has been saved for 30000 frames.")
             #exit()
 
 
@@ -618,7 +618,7 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
     
     print "maximum fear level: ", fMax
         
-    rsm = rtm/ (rdm*fps) # real speed multiplier [m/s to px/frame]
+    rsm = 10/ (rdm*fps) # real speed multiplier [m/s to px/frame]
     print "real speed multiplier [m/s to px/frame]: ", rsm
 
     oneSecond = fps/rtm # number of frames in a second

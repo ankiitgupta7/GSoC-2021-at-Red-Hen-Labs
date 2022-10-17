@@ -18,10 +18,10 @@ Path("./data").mkdir(parents=True, exist_ok=True)
 
 start = 0
 
-def runSim(endSim, simParam):
+def runSim(endSimFrame, simParam):
     count = 1
     simData = []
-    while count<=endSim:
+    while count<=endSimFrame:
         global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, width, height
         global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge
         global fov, alarmPotency, startOfSim, popGrowth, scanFreq, dataFile
@@ -60,18 +60,17 @@ def runSim(endSim, simParam):
             rdm = spaceScale  # real distance multipier   [meter to px] 
             growthRate = resourceGrowthRate   # resource % growth in a day
 
-            rsm = rtm/float(rdm*fps) # real speed multiplier [m/s to px/frame]
-
+            rsm = 10/float(rdm*fps) # real speed multiplier [m/s to px/frame]
             oneSecond = fps/rtm # number of frames in a second
             oneMinute = 60*oneSecond # number of frames in a minute
-            oneHour = 60*oneMinute  # number of frames in a hour
-            oneDay = 24*oneHour  # number of frames in a day
-            oneYear = 365*oneDay  # number of frames in a year
+            oneHour = math.ceil(60*oneMinute)  # number of frames in a hour
+            oneDay = math.ceil(24*oneHour)  # number of frames in a day
+            oneYear = math.ceil(365*oneDay)  # number of frames in a year
             oneMeter = 1/rdm
 
 
             fBreed = oneYear    # to be tuned
-            scanFreq = scanFreq * oneMinute
+            scanFreq = math.ceil(scanFreq * oneMinute)
             r = r * oneMeter
             resourceRichness = 10
             
@@ -363,7 +362,7 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
     
     print ("maximum fear level: ", fMax)
         
-    rsm = rtm/ (rdm*fps) # real speed multiplier [m/s to px/frame]
+    rsm = 10/ float(rdm*fps) # real speed multiplier [m/s to px/frame]
     print ("real speed multiplier [m/s to px/frame]: ", rsm)
 
     oneSecond = fps/rtm # number of frames in a second
@@ -441,17 +440,17 @@ def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, re
     print ("-----------------------------------------------------------------------")
 
 def getParamRange():
-    fps = [1]
+    fps = [60]
     vervet_size = [6]
     simAreaParam = [1000]
-    n_predator = [1,2]
-    n_vervet = [10, 50]
+    n_predator = [4]
+    n_vervet = [100]
     radiusFOV = [50]
     angleFOV = [200]
     alarmPotency = [0,1,2]
-    popGrowth = [1]
-    scanFreq = [2,5]
-    timeScale = [.5*fps[0]]
+    popGrowth = [0]
+    scanFreq = [10]
+    timeScale = [5000*fps[0],10000*fps[0]]
     spaceScale = [1]
     resourceGrowthRate = [3]
     return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
@@ -515,6 +514,8 @@ def showTimeConversion(fps, rtm):
 
     print ("-----------------------------------------------------------------------")
 
+    return oneYear
+
 
 def runMultipleSims():
     startTime = time.time()
@@ -523,10 +524,9 @@ def runMultipleSims():
 
     paramList = getParamList(paramRange)
     
-   # showTimeConversion(paramList[0][0],paramList[0][10])
 
-   # print("Please enter number of iterations (of time equivalent) to run for each condition: ")
-    endSim = 7200
+    print("Please enter number of years to run the simulation for each condition: ")
+    endSimYear = float(input())
 
 
     now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
@@ -534,7 +534,12 @@ def runMultipleSims():
     Path(simSavePath).mkdir(parents=True, exist_ok=True)
 
     for i in range(len(paramList)):
-        simData = runSim(endSim, paramList[i])
+            
+        oneYear = showTimeConversion(paramList[i][0],paramList[i][10])
+        endSimFrame = int(endSimYear * oneYear)
+
+        print("no. of frames to run for this condition:", endSimFrame)
+        simData = runSim(endSimFrame, paramList[i])
         savePath = simSavePath+"/sim"+str(i)+"Alarm"+str(paramList[i][7])
         saveSimDetails(paramList[i], savePath)
         saveSimData(simData, savePath)
@@ -542,7 +547,7 @@ def runMultipleSims():
     endTime = time.time()
     timeElapsed = endTime - startTime
 
-    print("timeElapsed, runSpeed (iteration per second): ", timeElapsed, len(paramList)*endSim/timeElapsed)
+    print("timeElapsed, runSpeed (iteration per second): ", timeElapsed, len(paramList)*endSimFrame/timeElapsed)
 
 
 runMultipleSims()

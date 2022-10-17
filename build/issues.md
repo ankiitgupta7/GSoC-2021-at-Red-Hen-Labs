@@ -25,6 +25,7 @@
 * threat representation during avoiding
 * When number of blocks is too less to represent - IndexError: index out of range: 0 at 466:0 in vehicle.py
 * https://discourse.processing.org/t/loop-animated-gif-in-python-mode/30479
+* vx = v * math.cos(self.alpha) - TypeError: must be real number, not NoneType - \build\pureComputation\vehicle.py", line 208
 
 
 

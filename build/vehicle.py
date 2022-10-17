@@ -173,7 +173,7 @@ class vehicle(object):
         # probability of predation success in this attempt = 80%
 
         predationDist = 10*oneMeter # to be tuned
-        if(closestDist<10*oneMeter and self.stim[closest].eLevel<.5*self.stim[closest].eMax and random.uniform(0,1)>.2):    # conditions for predation
+        if(closestDist<predationDist and self.stim[closest].eLevel<.5*self.stim[closest].eMax and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -208,12 +208,12 @@ class vehicle(object):
             self.movement = 2
 
         # scanning frequency is more while having higher order movements - 4 & 9 times when moving to refuge & avoiding predator resp. - to be tuned 
-        scanFreq = int(scanFreq/self.movement**2)
+        scanFreq = math.ceil(scanFreq/self.movement)
 
                 
         # visual periodic scan of environment 
         if(frameNumber % scanFreq == 0):   # scanning begins
-            self.eLevel -= 2*energyDecayRate   # cost of scanning - double than usual energyDecayRate - to be tuned
+            #self.eLevel -= 2*energyDecayRate   # cost of scanning - double than usual energyDecayRate - to be tuned
 
             # to check on whether stimulus lies in the Field of View (FoV) and vervet is outside its corresponding refuge
             # i.e. to check if agent can visually spot the stimulus [visual scan]
@@ -255,14 +255,14 @@ class vehicle(object):
 
 
         # Acting upon movement information
-        if(self.movement == 1 and checkhideout != self.threat and self.eLevel < .5 * self.eMax):    # forage only if on less than half eLevel - to be tuned
+        if(self.movement == 1 and checkhideout != self.threat and self.eLevel < 1 * self.eMax):    # forage only if on less than half eLevel - to be tuned
             v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute)
         elif(self.movement == 2 and alarmPotency == 1):
             v, self.alpha, self.threat = moveToNearestRefuge(self, refuge)
         elif(self.movement == 2 and alarmPotency == 2):
             v, self.alpha = moveToRefuge(self, refuge, self.threat)
         elif(self.movement == 3):
-            v, self.alpha = moveToAvoidBV(self, closest)
+            v, self.alpha = moveToAvoid(self, closest)
 
 
         # disappearance of fear level
@@ -272,8 +272,8 @@ class vehicle(object):
             self.threat = 0
         else:
             # fear level keeps decreasing by fearDecayRate levels per frame after being recently alarmed or seeing predator
-            fearDecayRate = self.fMax/(60*oneMinute)  # to be tuned - current they remain in fear for 60 minutes
-            self.fLevel -= (.1*fearDecayRate*v + fearDecayRate) # to be tuned later
+            #fearDecayRate = self.fMax/(60*oneMinute)  # to be tuned - current they remain in fear for 60 minutes
+            self.fLevel -= .01*self.fLevel # to be tuned later
 
 
         # update coordinate based on velocity, orientation
@@ -285,6 +285,7 @@ class vehicle(object):
             # use alarm lists of this frame for next frame
             _alarms = alarms
             alarms = []
+        return
 
 
 
