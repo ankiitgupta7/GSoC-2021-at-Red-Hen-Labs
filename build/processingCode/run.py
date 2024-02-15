@@ -20,16 +20,16 @@ fps = 60    # number of desired frames per second
 
 dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
 
-img1 = loadImage("leopard2.jpg")
-img2 = loadImage("hawk1.jpg")
-img3 = loadImage("python5.jpg")
+img1 = loadImage("./Images/leopard2.jpg")
+img2 = loadImage("./Images/hawk1.jpg")
+img3 = loadImage("./Images/python5.jpg")
 
 img = img1, img2, img3
 
 
-leopard_trees = loadImage("tree.jpg")
-hawk_bush = loadImage("bush.jpg")
-pyhton_stones = loadImage("stony-ground.jpg")
+leopard_trees = loadImage("./Images/tree.jpg")
+hawk_bush = loadImage("./Images/bush.jpg")
+pyhton_stones = loadImage("./Images/stony-ground.jpg")
 
 refugeImage = [leopard_trees, hawk_bush, pyhton_stones] 
 
