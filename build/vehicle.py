@@ -169,11 +169,11 @@ class vehicle(object):
 
         # check if predator is very close (<10 meters) to agent
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
-        # check if predator eLevel is not more than 50% of self.eMax    # to be tuned - eat only when < 50% of eMax
+        # check if predator eLevel is not more than 90% of self.eMax    # to be tuned - eat only when < 90% of eMax
         # probability of predation success in this attempt = 80%
 
         predationDist = 10*oneMeter # to be tuned
-        if(closestDist<predationDist and self.stim[closest].eLevel<.5*self.stim[closest].eMax and random.uniform(0,1)>.2):    # conditions for predation
+        if(closestDist<predationDist and self.stim[closest].eLevel<.9*self.stim[closest].eMax and random.uniform(0,1)>.2):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -184,7 +184,7 @@ class vehicle(object):
 
             self.stim[closest].lastKill = 0
 
-            self.stim[closest].eLevel += .5*self.stim[closest].eMax # 10% of eMax   - to be tuned - get eLevel of prey been preyed
+            self.stim[closest].eLevel += .1*self.stim[closest].eMax # 10% of eMax   - to be tuned - get eLevel of prey been preyed
 
             if self.stim[closest].eLevel >  self.stim[closest].eMax:
                 self.stim[closest].eLevel  =  self.stim[closest].eMax

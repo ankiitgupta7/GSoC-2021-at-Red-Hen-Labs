@@ -1,4 +1,7 @@
-add_library('controlP5')
+# add_library('controlP5')
+
+from controlP5 import ControlP5, Slider, ScrollableList
+
 import random
 import math
 import stimulus
