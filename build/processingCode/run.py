@@ -15,7 +15,7 @@ import os
 # please make sure to have the unzipped controlP5 files in the "libraries" folder 
 # other than the "processing-py.jar" file in build directory
 
-D = 650 # canvas dimensions
+D = 900 # canvas dimensions
 fps = 60    # number of desired frames per second
 
 dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
