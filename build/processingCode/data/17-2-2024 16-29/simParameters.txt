@@ -1,0 +1,11 @@
+Total number of Vervets = 150
+Total number of Predators = 15
+Total number of Leopards = 5
+Total number of Hawks = 5
+Total number of Pythons = 5
+The distance factor perceptible to Vervets = 50
+Frontal Field of view of Vervets (in degrees) = 200
+Number of grids resource area to be divided into = 36
+Density factor of resource grids = 0.6000000238418579
+Scale of Agent representation = 9
+

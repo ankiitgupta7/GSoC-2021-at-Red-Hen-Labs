@@ -41,6 +41,8 @@ class stimulus(object):
         closestAvoidDist, safeDist = getClosestAvoidDist(self)
         hLevel = self.eMax - self.eLevel
         v = self.maxSpeed * hLevel / self.eMax
+
+        # print("maxSpeed: ", self.maxSpeed , "hLevel: ", hLevel, "eMax: ", self.eMax, "eLevel: ", self.eLevel, "v: ", v)
         vx = v * math.cos(self.orient)
         vy = v * math.sin(self.orient)
 
@@ -50,8 +52,8 @@ class stimulus(object):
             vy *= -1
             self.orient += math.pi
 
-        # predators don't move for 1hr equivalent frames after kill, don't kill for about 300 frames after kill
-        if self.lastKill > oneHour:
+        # predators don't move for 20 frames after kill, don't kill for about 300 frames after kill
+        if self.lastKill > 20:
             self.x = self.x + vx
             self.y = self.y + vy
         else:
@@ -60,9 +62,13 @@ class stimulus(object):
         # time elapsed after last kill
         self.lastKill += 1
 
-        # energy decay per frame
-        edr = self.eMax / (oneDay*self.swf) # energy decay rate (per frame)
-        self.eLevel -= (.1*edr*v/self.maxSpeed + edr) # to be tuned later
+        # # energy decay per frame
+        # edr = self.eMax / (oneDay*self.swf) # energy decay rate (per frame)
+
+        energyDecayRate = 0.0001   # .1% of eMax energy decay per frame along with the survival without food factor
+        # self.eLevel -= (.1*edr*v/self.maxSpeed + edr) # to be tuned later
+
+        self.eLevel -= energyDecayRate * self.eMax + v / 10 # to be tuned later
  
  
        # to make the stimuli rebound from boundaries

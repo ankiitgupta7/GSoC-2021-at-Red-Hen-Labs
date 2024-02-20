@@ -22,11 +22,12 @@ def runSim(endSimFrame, simParam):
     count = 1
     simData = []
     while count<=endSimFrame:
-        global cp5, n, d, r, stim, objs, patch, refuge, notEmptySpace, start, width, height
-        global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge
-        global fov, alarmPotency, startOfSim, popGrowth, scanFreq, dataFile
+        global cp5, n, n1, n2, n3, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
+        global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge, lastKill
+        global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, dataFile
         global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation, resourceRichness
         global rtm, rdm, rsm, fMax, eMax, fBreed, oneSecond, oneMinute, oneHour, oneDay, oneYear, growthRate, oneMeter
+        global oneGeneration
 
         eMax = 1000 # max energy level
         fMax = 1000 # max fear level
@@ -60,7 +61,7 @@ def runSim(endSimFrame, simParam):
             rdm = spaceScale  # real distance multipier   [meter to px] 
             growthRate = resourceGrowthRate   # resource % growth in a day
 
-            rsm = 10/float(rdm*fps) # real speed multiplier [m/s to px/frame]
+            # rsm = 10/float(rdm*fps) # real speed multiplier [m/s to px/frame]
             oneSecond = fps/rtm # number of frames in a second
             oneMinute = 60*oneSecond # number of frames in a minute
             oneHour = math.ceil(60*oneMinute)  # number of frames in a hour
@@ -69,15 +70,28 @@ def runSim(endSimFrame, simParam):
             oneMeter = 1/rdm
 
 
-            fBreed = oneYear    # to be tuned
-            scanFreq = math.ceil(scanFreq * oneMinute)
+
+            oneGeneration = 10000 # means 10,000 frames reprepresenting total adult age of the vervet and the predators
+            oneYear = 1000  # number of frames in a year in the simulation
+            oneMeter = 1 # makes 1 m to 1 px
+
+            rsm = .5 # speed multiplier: makes 10 m/s to 1 px/frame
+
+
+            # fBreed = oneYear    # to be tuned
+            # scanFreq = math.ceil(scanFreq * oneMinute)
+
+            fBreed = oneGeneration / 10 # frequency of breeding
+
             r = r * oneMeter
-            resourceRichness = 10
-            
+            resourceRichness = 1
+                
             # creating resource patches in the environment
             refuge = list()
             patch = list() 
-            patchSizeControl = 3*2   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
+
+            numberOfRefuges = 3 # number of refuges in the environment from each predator
+            patchSizeControl = 3*numberOfRefuges   # decides how densely the patchPoints (resource points - yellow dots) are arranged; also decides how big or small the patch size is
             patchDensity = .6   # decides how densely (0,1) the patches (the squares) are arranged
 
             refuge, patch = createResourceRefugePatch(patchSizeControl, patchDensity, refuge, patch, resourceRichness, width, height)
@@ -90,48 +104,47 @@ def runSim(endSimFrame, simParam):
 
             lRefuge, hRefuge, pRefuge = avoidLocations
 
+            lastKill = 300  # assuming lastKill was 300 frames ago, just to make them ready to hunt
 
             # generating stimuli at the start of simulation    
             for i in range(n1):
-                # assuming lastKill was oneDay ago
                 lx, ly = getInitialPredatorLocations(lRefuge, width, height)
                 randAge = int(10 * oneYear * random.uniform(0,1))
-                eLevel = eMax * random.uniform(0,1)
+                eLevel = eMax
                 lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
                 lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
                 swf = 14
-                stim.append(stimulus.stimulus('leopard', randAge, lx, ly, lMaxSpeed, lOrient, lRefuge, oneDay, swf, eLevel, eMax))   # lh: leopard refuge
+                stim.append(stimulus.stimulus('leopard', randAge, lx, ly, lMaxSpeed, lOrient, lRefuge, lastKill, swf, eLevel, eMax))   # lh: leopard refuge
 
             for i in range(n2):
                 hx, hy = getInitialPredatorLocations(hRefuge, width, height)
                 randAge = int(10 * oneYear * random.uniform(0,1))
-                eLevel = eMax * random.uniform(0,1)
+                eLevel = eMax
                 hMaxSpeed = 45 * rsm
                 hOrient = 2 * math.pi * random.uniform(0,1)
                 swf = 14
-                stim.append(stimulus.stimulus('hawk', randAge, hx, hy, hMaxSpeed, hOrient, hRefuge, oneDay, swf, eLevel, eMax))
+                stim.append(stimulus.stimulus('hawk', randAge, hx, hy, hMaxSpeed, hOrient, hRefuge, lastKill, swf, eLevel, eMax))
 
             for i in range(n3):
                 px, py = getInitialPredatorLocations(pRefuge, width, height)
                 randAge = int(10 * oneYear * random.uniform(0,1))
-                eLevel = eMax * random.uniform(0,1)
+                eLevel = eMax
                 pMaxSpeed = .45 * rsm
                 pOrient = 2 * math.pi * random.uniform(0,1)
                 swf = 365
-                stim.append(stimulus.stimulus('python', randAge, px, py, pMaxSpeed, pOrient, pRefuge, oneDay, swf, eLevel, eMax))
+                stim.append(stimulus.stimulus('python', randAge, px, py, pMaxSpeed, pOrient, pRefuge, lastKill, swf, eLevel, eMax))
 
 
             # creating an array of agents at the start of simulation 
             objs = list()   
             for i in range(n):
-                eLevel = eMax * random.uniform(0,1) # assigning initial energy level to be a random between 0-eMax
+                eLevel = eMax 
                 alpha = 2 * math.pi * random.uniform(0,1)
                 movement = 1    # movemevent rule, default is to forage
                 recentlySeenPredator = 0    # information about having recently seen predator
                 threat = 0  # awareness about predator
                 aAge = int(10 * oneYear * random.uniform(0,1)) # random adult age at start of simulation
                 maxSpeed = 10 * rsm
-                eLevel = eMax * random.uniform(0,1)
                 swf = 30 # to be tuned
                 objs.append(vehicle.vehicle(random.uniform(0,width), random.uniform(0,height), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
             
@@ -216,14 +229,14 @@ def runSim(endSimFrame, simParam):
             # modeling agent reproduction
             if((count-startOfSim+1)%fBreed==0 and popGrowth==1):   # fBreed: breeding frequency
                 for i in range(len(objs)):
-                    if(objs[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
+                    if(objs[i].eLevel > .5 * eMax and random.uniform(0,1) > .5):
                         alpha = 2 * math.pi * random.uniform(0,1)
                         movement = 1
                         recentlySeenPredator = 0
                         threat = 0
                         aAge = 0
                         maxSpeed = 10 * rsm
-                        eLevel = eMax * random.uniform(0,1)
+                        eLevel = eMax
                         swf = 30
                         objs.append(vehicle.vehicle(random.uniform(0,width), random.uniform(0,height), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
 
@@ -231,31 +244,34 @@ def runSim(endSimFrame, simParam):
             if((count-startOfSim+1)%fBreed==0 and popGrowth==1):
                 for i in range(len(stim)):    
                     stim_aAge = 0
-                    if(stim[i].type == 'leopard' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):       
+
+                    expectedNumberOfEachPredator = len(objs) / (10 * 3)
+
+                    if(stim[i].type == 'leopard' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_leopard/expectedNumberOfEachPredator)):       
                         lx, ly = getInitialPredatorLocations(lRefuge, width, height)
-                        eLevel = eMax * random.uniform(0,1)
+                        eLevel = eMax 
                         lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
                         lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
                         swf = 14
-                        stim.append(stimulus.stimulus('leopard', stim_aAge, lx, ly, lMaxSpeed, lOrient, lRefuge, oneDay, swf, eLevel, eMax))
+                        stim.append(stimulus.stimulus('leopard', stim_aAge, lx, ly, lMaxSpeed, lOrient, lRefuge, lastKill, swf, eLevel, eMax))
                         n_leopard += 1
 
-                    elif(stim[i].type == 'hawk' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
+                    elif(stim[i].type == 'hawk' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_hawk/expectedNumberOfEachPredator)):
                         hx, hy = getInitialPredatorLocations(hRefuge, width, height)
-                        eLevel = eMax * random.uniform(0,1)
+                        eLevel = eMax 
                         hMaxSpeed = 45 * rsm
                         hOrient = 2 * math.pi * random.uniform(0,1)
                         swf = 14
-                        stim.append(stimulus.stimulus('hawk', stim_aAge, hx, hy, hMaxSpeed, hOrient, hRefuge, oneDay, swf, eLevel, eMax))
+                        stim.append(stimulus.stimulus('hawk', stim_aAge, hx, hy, hMaxSpeed, hOrient, hRefuge, lastKill, swf, eLevel, eMax))
                         n_hawk += 1
 
-                    elif(stim[i].type == 'python' and stim[i].eLevel > .3 * eMax and random.uniform(0,1) > .5):
+                    elif(stim[i].type == 'python' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_python/expectedNumberOfEachPredator)):
                         px, py = getInitialPredatorLocations(pRefuge, width, height)
-                        eLevel = eMax * random.uniform(0,1)
+                        eLevel = eMax 
                         pMaxSpeed = .45 * rsm
                         pOrient = 2 * math.pi * random.uniform(0,1)
                         swf = 365
-                        stim.append(stimulus.stimulus('python', stim_aAge, px, py, pMaxSpeed, pOrient, pRefuge, oneDay, swf, eLevel, eMax))
+                        stim.append(stimulus.stimulus('python', stim_aAge, px, py, pMaxSpeed, pOrient, pRefuge, lastKill, swf, eLevel, eMax))
                         n_python += 1
 
             # to log data specific to each frame
@@ -349,110 +365,23 @@ def avoidRefugeLocations(avoidRefugeCode, refuge):
     return refugeInfo
 
 
-    
-def showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness, D):
-    print("-----------------------------------------------------------------------")
-    print ("frames per second: ", fps)
-    
-    print ("real time multiplier [s to s]: ", rtm)
-
-    print ("real distance multiplier [m to px]: ", rdm)
-
-    print ("maximum energy level: ", eMax)
-    
-    print ("maximum fear level: ", fMax)
-        
-    rsm = 10/ float(rdm*fps) # real speed multiplier [m/s to px/frame]
-    print ("real speed multiplier [m/s to px/frame]: ", rsm)
-
-    oneSecond = fps/rtm # number of frames in a second
-    print ("number of frames in one realtime second: ", oneSecond)
 
 
-    oneMinute = 60*fps/rtm # number of frames in a minute
-    print ("number of frames in a minute: ", oneMinute)
-
-
-    oneHour = 3600*fps/rtm  # number of frames in a hour
-    print ("number of frames in oneHour: ", oneHour)
-
-    oneDay = 86400*fps/rtm  # number of frames in a day
-    print ("number of frames in oneDay: ", oneDay)
-
-
-    oneYear = 31536000*fps/rtm  # number of frames in a year
-    print ("number of frames in oneYear: ", oneYear)
-
-
-    oneMeter = 1/rdm    
-    print ("number of px in oneMeter: ", oneMeter)
-
-
-    oneKiloMeter = 1000*oneMeter  
-    print ("number of px in oneKiloMeter: ", oneKiloMeter)
-
-    #fBreed - conditioned in code
-    fBreed = oneYear
-    print ("frequency(No. of frames) of Breeding = 1 year: ", fBreed)
-
-    #age - conditioned in code
-    age = 10 * oneYear
-    print ("Age of Death = 10 year (No. of frames): ", age)
-
-    # Speed
-    lMaxSpeed = 15 * rsm
-    hMaxSpeed = 45 * rsm
-    pMaxSpeed = .45 * rsm
-    print ("Max Speed (px/frame) - leopard, hawk, python: ", lMaxSpeed, hMaxSpeed, pMaxSpeed)
-
-    # scanFreq - conditioned in code
-    scanFreq = scanFreq * oneMinute
-    print ("scanFreq = ",scanFreq," (No. of frames)")
-
-    # decayRates
-    swf = 14
-    edr = eMax / (oneDay*swf) # energy decay rate (per frame)
-    fearDecayRate = fMax/(60*oneMinute)  # to be tuned - currently they remain in fear for 60 minutes
-    print ("appx energy decay rate (per frame): ", edr)
-    print ("appx fear decay rate (per frame): ", fearDecayRate)
-
-    # resource growth
-    growthPercentInOneFrame = growthRate/oneDay
-    growthInOneFrame = 255*resourceRichness*growthPercentInOneFrame/100
-    print ("growthInOneFrame when growthRate = ",growthRate,": ", growthInOneFrame)
-
-    # resource consumption rate
-    consumptionFactor = .2 / oneHour
-    consumptionPerFrame = eMax * consumptionFactor
-    print ("consumptionPerFrame at consumptionFactor = .2: ", consumptionPerFrame)
-
-    # field of view - conditioned in code
-    print ("field of view range (#px): ", r)
-
-    # KillAttempt Distance - conditioned in code
-    predationDist = 10*oneMeter
-    print ("KillAttempt Distance(#px): ", predationDist)
-
-
-    # Area Dimensions
-    print ("Dimensions in km: ", D/1000, D/1000)
-
-    print ("-----------------------------------------------------------------------")
 
 def getParamRange():
     fps = [60]
-    vervet_size = [6]
+    vervet_size = [9]
     simAreaParam = [1000]
-    n_predator = [4]
-    n_vervet = [100]
+    n_predator = [10]
+    n_vervet = [300]
     radiusFOV = [50]
     angleFOV = [200]
     alarmPotency = [0,1,2]
-    popGrowth = [0]
+    popGrowth = [1]
     scanFreq = [10]
-    timeScale = [5000*fps[0],10000*fps[0]]
+    timeScale = [10000]
     spaceScale = [1]
-    resourceGrowthRate = [3]
+    resourceGrowthRate = [3,6]
     return fps, simAreaParam, n_predator, n_vervet, vervet_size, radiusFOV, angleFOV, alarmPotency, popGrowth, scanFreq, timeScale, spaceScale, resourceGrowthRate
  
 def getParamList(x):
@@ -493,29 +422,6 @@ def saveSimDetails(simParam, savePath):
         writer.writerow(simParam)
 
 
-    
-def showTimeConversion(fps, rtm):
-    print("-----------------------------------------------------------------------")
-        
-    oneHour = 3600*fps/rtm  # number of frames in a hour
-    print ("number of frames in oneHour: ", oneHour)
-
-    oneDay = 86400*fps/rtm  # number of frames in a day
-    print ("number of frames/iterations required for oneDay: ", oneDay)
-
-
-    oneYear = 31536000*fps/rtm  # number of frames in a year
-    print ("number of frames/iterations required for oneYear: ", oneYear)
-
-    #age - conditioned in code
-    age = 10 * oneYear
-    print ("number of frames/iterations required for 10 years: ", age)
-
-
-    print ("-----------------------------------------------------------------------")
-
-    return oneYear
-
 
 def runMultipleSims():
     startTime = time.time()
@@ -525,8 +431,8 @@ def runMultipleSims():
     paramList = getParamList(paramRange)
     
 
-    print("Please enter number of years to run the simulation for each condition: ")
-    endSimYear = float(input())
+    print("Please enter number of generations to run the simulation for each condition: ")
+    endSimGeneration = float(input())
 
 
     now = datetime.datetime.now().strftime('%Y-%m-%d %H-%M-%S')
@@ -534,9 +440,8 @@ def runMultipleSims():
     Path(simSavePath).mkdir(parents=True, exist_ok=True)
 
     for i in range(len(paramList)):
-            
-        oneYear = showTimeConversion(paramList[i][0],paramList[i][10])
-        endSimFrame = int(endSimYear * oneYear)
+        oneGeneration = 10000
+        endSimFrame = int(endSimGeneration * oneGeneration)
 
         print("no. of frames to run for this condition:", endSimFrame)
         simData = runSim(endSimFrame, paramList[i])

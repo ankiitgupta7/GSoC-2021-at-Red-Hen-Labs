@@ -1,0 +1,2 @@
+fps,simAreaParam,n_predator,n_vervet,vervet_size,radiusFOV,angleFOV,alarmPotency,popGrowth,scanFreq,timeScale,spaceScale,resourceGrowthRate
+60,1000,10,300,6,50,200,2,1,10,10000,1,3

@@ -49,13 +49,18 @@ class vehicle(object):
 
         # setting up energyDecayRate
         oneDay  = 24*60*oneMinute
-        energyDecayRate = self.eMax / (oneDay*self.swf) # energy decay rate (per frame)
+        # energyDecayRate = self.eMax / (oneDay*self.swf) # energy decay rate (per frame)
+
+
+        energyDecayRate = .001 # .1 % of eMax per frame
+
 
         # return if there's no predators
-        if len(self.stim)<1:
-            if self.eLevel < .5 * self.eMax:
-                v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute, width, height)
-            updateEnergyAndPosition(self, v, oneMinute, energyDecayRate)
+        if len(self.stim) < 1:
+            forageFactor = .9
+            if self.eLevel < forageFactor * self.eMax:    # forage if at less than 90 % of eMax
+                v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute , width, height)
+            updateEnergyAndPosition(self, v, energyDecayRate)
             return
 
         # checking whether the agent is inside a refuge
@@ -63,10 +68,10 @@ class vehicle(object):
 
         # checking any alarm call in the last frame
         if(len(_alarms)>0 and alarmPotency>0):
-            alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r, width, height)
+            alarm = checkAlarmCall(self.xpos, self.ypos, _alarms, r,width,height)
 
         # letting the closest predator to vervet attempt to kill
-        closest, closestDist = closestPredator(self, width, height)
+        closest, closestDist = closestPredator(self,  width, height)
     
         # getting details of closest predator and setting up vervet awareness accordingly
         type = self.stim[closest].type    # type of predator
@@ -85,10 +90,13 @@ class vehicle(object):
         # check if predator is very close (<10 meters) to agent
         # check if there was no recent kill by this predator - don't kills for a while unless less on eLevel
         # check if predator eLevel is not more than 90% of self.eMax    # to be tuned - eat only when < 90% of eMax
+        # check if it made a recent kill within the last 300 frames, so that it doesn't kill again for a while
         # probability of predation success in this attempt = 80%
 
-        predationDist = 10*oneMeter # to be tuned
-        if(closestDist<predationDist and self.stim[closest].eLevel<.9*self.stim[closest].eMax and random.uniform(0,1)>.2):    # conditions for predation
+        predationDist = 15*oneMeter # to be tuned
+        minEnergyLevelForKillAttempt = .9 * self.stim[closest].eMax # to be tuned
+        predationSuccessProb = .5 # to be tuned
+        if(closestDist < predationDist and self.stim[closest].eLevel < minEnergyLevelForKillAttempt and self.stim[closest].lastKill > 300 and random.uniform(0,1) < predationSuccessProb):    # conditions for predation
             # the agent is ready for death with a 80% probability!
             if(self.stim[closest].type == "leopard"):
                 self.rfd = [1,1]
@@ -99,7 +107,9 @@ class vehicle(object):
 
             self.stim[closest].lastKill = 0
 
-            self.stim[closest].eLevel += .1*self.stim[closest].eMax # 10% of eMax   - to be tuned - get eLevel of prey been preyed
+            energInakeFromKill = .5*self.stim[closest].eMax
+
+            self.stim[closest].eLevel += energInakeFromKill # 50% of eMax energy intake from kill, so 500 energy units
 
             if self.stim[closest].eLevel >  self.stim[closest].eMax:
                 self.stim[closest].eLevel  =  self.stim[closest].eMax
@@ -112,7 +122,8 @@ class vehicle(object):
         # alarm call was perceived in the last frame
         elif(alarm>0 and checkhideout != alarm):      
             self.threat = alarm    # update fear level and corresponding alarm call
-            self.fLevel = .6*self.fMax   # fear level due to alarms is less than actual sight
+            auditoryFearFactor = .6 # to be tuned
+            self.fLevel = auditoryFearFactor * self.fMax   # fear level due to alarms is less than actual sight
             if(checkhideout!=alarm and hLevel<self.fLevel):
                 self.movement = 2
                 if(alarmPotency == 1):  # just to assign dummy alarm type
@@ -122,10 +133,10 @@ class vehicle(object):
         elif(self.fLevel>hLevel and self.threat>0 and checkhideout != self.threat):
             self.movement = 2
 
-        # scanning frequency is more while having higher order movements - 4 & 9 times when moving to refuge & avoiding predator resp. - to be tuned 
+        # scanning frequency is more while having higher order movements - 2 & 3 times when moving to refuge & avoiding predator resp. - to be tuned 
         scanFreq = math.ceil(scanFreq/self.movement)
 
-        
+                
         # visual periodic scan of environment 
         if(frameNumber % scanFreq == 0):   # scanning begins
             #self.eLevel -= 2*energyDecayRate   # cost of scanning - double than usual energyDecayRate - to be tuned
@@ -134,23 +145,26 @@ class vehicle(object):
             # i.e. to check if agent can visually spot the stimulus [visual scan]
             if(isInsideFoV(self.xpos,self.ypos,awareRadius,self.alpha*180/math.pi,fov,x,y)):
                 # getting alarmed about a predator (if agent is not in refuge) as it the vervet sees the predator
+                fearFactor = 1  # default fearFactor
                 if(type == "leopard"):
                     if(checkhideout != 1):
                         alarm = 1
-                        self.fLevel = .9*self.fMax  # to be tuned
+                        fearFactor = .9
                         self.threat = 1
 
                 elif(type == "hawk"):
                     if(checkhideout != 2):
                         alarm = 2
-                        self.fLevel = .8*self.fMax
+                        fearFactor = .8
                         self.threat = 2
 
                 elif(type == "python"):
                     if(checkhideout != 3):
                         alarm = 3
-                        self.fLevel = .7*self.fMax
+                        fearFactor = .7
                         self.threat = 3
+                    
+                self.fLevel = fearFactor * self.fMax
 
                 self.recentlySeenPredator = self.threat
 
@@ -165,9 +179,10 @@ class vehicle(object):
                     alarms.append(temp)   # storing alarm call data to be used in next frame
                     first2See[closest] = 1    # as this vervet is first to see the predator
 
+        # Acting upon movement information: 1 for forage, 2 for refuge, 3 for avoid
 
-        # Acting upon movement information
-        if(self.movement == 1 and checkhideout != self.threat and self.eLevel < 1 * self.eMax):    # forage only if on less than half eLevel - to be tuned
+        forageFactor = .9
+        if(self.movement == 1 and checkhideout != self.threat and self.eLevel < forageFactor * self.eMax):    # forage only if on less than 90% of eLevel - to be tuned
             v, self.alpha, self.eLevel = moveToForage(self, self.xpos, self.ypos, self.patch, self.eLevel, oneMinute, width, height)
         elif(self.movement == 2 and alarmPotency == 1):
             v, self.alpha, self.threat = moveToNearestRefuge(self, refuge, width, height)
@@ -185,11 +200,12 @@ class vehicle(object):
         else:
             # fear level keeps decreasing by fearDecayRate levels per frame after being recently alarmed or seeing predator
             #fearDecayRate = self.fMax/(60*oneMinute)  # to be tuned - current they remain in fear for 60 minutes
-            self.fLevel -= .01*self.fLevel # to be tuned later
+            fearDecayRate = .002 # .2% of fMax per frame
+            self.fLevel -= fearDecayRate * self.fMax # to be tuned later
 
 
         # update coordinate based on velocity, orientation
-        updateEnergyAndPosition(self, v, oneMinute, energyDecayRate)
+        updateEnergyAndPosition(self, v, energyDecayRate)
 
         if(index == nAgents-1): # end of a particular frame
             for j in range(0,len(self.stim)):
@@ -202,16 +218,22 @@ class vehicle(object):
 
 
 
-def updateEnergyAndPosition(self, v, oneMinute, energyDecayRate):
+
+
+def updateEnergyAndPosition(self, v, energyDecayRate):
     # energy decay in agents
     # energy level decreases continuously after each frame even if agent is stagnant or decreases wrt agent speed
-    self.eLevel -= (.1*energyDecayRate*v/self.maxSpeed + energyDecayRate) # to be tuned later
+    # self.eLevel -= (.1*energyDecayRate*v/self.maxSpeed + energyDecayRate) # to be tuned later
+    self.eLevel -= energyDecayRate * self.eMax + v/10 # so for speed of 10 px / frame, energy decay for speed is 1 + .001*1000 = 2
+
+
     vx = v * math.cos(self.alpha)
     vy = v * math.sin(self.alpha)
 
     # updating the new position as vehicle moves
     self.xpos = self.xpos + vx
     self.ypos = self.ypos + vy
+
 
 # returns the index of closest predator to an agent
 def closestPredator(self, width, height):
@@ -346,8 +368,7 @@ def checkAlarmCall(x,y,alarms,r,width,height):
     return 0
 
 
-def moveToForage(self,x,y,patch,eLevel, oneMinute, width, height):
-    oneHour = 60 * oneMinute
+def moveToForage(self, x, y, patch, eLevel, oneMinute, width, height):
     patchDist = width + height  # setting this as max value
     nearestPatch = 0 # dummy
     for i in range(0,len(patch)):
@@ -366,10 +387,10 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute, width, height):
     else:
         vel = 0
         if(eLevel<.9*self.eMax):    # deprecated
-            consumptionFactor = .2 / oneHour  # agent consumption per frame with 20% consumption of their eMax per hour   # to be tuned
+            consumptionFactor = .005  # agent consumption per frame is .5% their eMax, so 5 eUnits earned per frame when foraging   # to be tuned
             consumptionPerFrame = self.eMax * consumptionFactor
             eLevel += consumptionPerFrame
-            nPoints = int(maxR//(255*patch[nearestPatch].resourceRichness))   # number of resource points in the patch
+            nPoints = maxR//(255*patch[nearestPatch].resourceRichness)   # number of resource points in the patch
             for i in range(nPoints):   
                 # rLevel of each patchPoint equally decreases by (total consumption by agent/total patchPoints) per frame
                 patch[nearestPatch].patchPoints[2][i] -= consumptionPerFrame/nPoints    
@@ -378,6 +399,7 @@ def moveToForage(self,x,y,patch,eLevel, oneMinute, width, height):
         eLevel = self.eMax
 
     return vel, alpha, eLevel
+
 
 
 def resourceData(ithPatch, resourceRichness):

@@ -9,13 +9,14 @@ class resourcePatch(object):
         self.tempY = tempY
         self.resourceRichness = resourceRichness
 
+
     def regrow(self, oneDay, growthRate):
         # assuming their growthRate% growth in 1 day
         x,y,rLevel = self.patchPoints # rLevel: resource level
         rMax = 255*self.resourceRichness    # maximum possible value of resource level - rLevel
         for j in range(len(rLevel)):
             if(rLevel[j]<rMax):
-                growthPercentInOneFrame = growthRate/oneDay
+                growthPercentInOneFrame = growthRate / 60  # to be tuned - now it is 
                 rLevel[j] += rMax*growthPercentInOneFrame/100 # net growth of resource levels per frame 
                 if(rLevel[j]>rMax):
                     rLevel[j] = rMax
