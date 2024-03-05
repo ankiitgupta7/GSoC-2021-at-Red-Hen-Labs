@@ -18,6 +18,7 @@ import os
 D = 900 # canvas dimensions
 fps = 60    # number of desired frames per second
 
+
 dataDirectory = os.path.join("./data", str(day()) + "-" + str(month()) + "-" + str(year()) + " " + str(hour()) + "-" + str(minute()))
 
 img1 = loadImage("./Images/leopard2.jpg")
@@ -42,12 +43,12 @@ def setup():
 
 
 def draw():
-    global cp5, n, n1, n2, n3, d, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
+    global cp5, n, n1, n2, n3, agentSize, r, stim, objs, patch, refuge, notEmptySpace, start, img1, img2, img3, refugeImage 
     global n_leopard, n_hawk, n_python, k, tempX, tempY, lRefuge, hRefuge, pRefuge, lastKill
     global fov, showSim, saveData, alarmPotency, startOfSim, popGrowth, scanFreq, dataFile
     global sDeath, prDeath, lDeath, hDeath, pDeath, deathLocation, resourceRichness
-    global rtm, rdm, rsm, fMax, eMax, fBreed, oneSecond, oneMinute, oneHour, oneDay, oneYear, growthRate, oneMeter
-    global oneGeneration
+    global rsm, fMax, eMax, fBreed, growthRate, oneMeter
+    global oneGeneration, breedingProbability, eIntakeFactor, forageFactor, predationSuccessProb
 
     eMax = 1000 # max energy level
     fMax = 1000 # max fear level
@@ -97,7 +98,7 @@ def draw():
 
         
         rGrowth = cp5.addSlider("rGrowth%")
-        rGrowth.setPosition(.9*width,270).setSize(60,10).setRange(3, 30).setValue(3).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        rGrowth.setPosition(.9*width,270).setSize(60,10).setRange(6, 60).setValue(30).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
         pRatio = cp5.addSlider("# of Refuge")
@@ -108,26 +109,26 @@ def draw():
         pDensity.setPosition(.9*width,330).setSize(60,10).setRange(.3, .9).setValue(.6).setNumberOfTickMarks(3).setSliderMode(Slider.FLEXIBLE)
 
 
-        tScale = cp5.addSlider("Time Scale")
-        tScale.setPosition(.9*width,360).setSize(60,10).setRange(1000, 100000).setValue(5000).setNumberOfTickMarks(100).setSliderMode(Slider.FLEXIBLE)
+        replProb = cp5.addSlider("Replication Probability")
+        replProb.setPosition(.9*width,360).setSize(60,10).setRange(0.0, 0.9).setValue(.1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
-        sScale = cp5.addSlider("Space Scale")
-        sScale.setPosition(.9*width,390).setSize(60,10).setRange(1, 10).setValue(1).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        eIntake = cp5.addSlider("Energy Intake Factor")
+        eIntake.setPosition(.9*width,390).setSize(60,10).setRange(0.1, 1.0).setValue(.5).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
 
         nAgent = cp5.addSlider("Agents")
         nAgent.setPosition(.9*width,440).setSize(60,10).setRange(50, 500).setValue(350).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
         
-        scale = cp5.addSlider("Body Size")
-        scale.setPosition(.9*width,470).setSize(60,10).setRange(3, 30).setValue(9).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        genScale = cp5.addSlider("One Generation")
+        genScale.setPosition(.9*width,470).setSize(60,10).setRange(1000, 10000).setValue(10000).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
-        fov_dist = cp5.addSlider("r of FoV")
-        fov_dist.setPosition(.9*width,500).setSize(60,10).setRange(10, 100).setValue(60).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        fFactor = cp5.addSlider("Forage Factor")
+        fFactor.setPosition(.9*width,500).setSize(60,10).setRange(0.1, 0.9).setValue(.9).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
-        angle =  cp5.addSlider("FoV Angle")
-        angle.setPosition(.9*width,530).setSize(60,10).setRange(0, 360).setValue(240).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
+        predRate =  cp5.addSlider("Predation Success Rate")
+        predRate.setPosition(.9*width,530).setSize(60,10).setRange(0.1, 0.9).setValue(.5).setNumberOfTickMarks(10).setSliderMode(Slider.FLEXIBLE)
 
     # triggering start / restart of simulation on clicking the "Run" button on control panel
     if mousePressed and (mouseButton == LEFT ) and mouseX>.9*width and mouseX<(.9*width+80) and mouseY>550 and mouseY<570:
@@ -140,41 +141,36 @@ def draw():
         n3 = int(cp5.getController("python").getValue())
         n_leopard, n_hawk, n_python = n1, n2, n3
         n = int(cp5.getController("Agents").getValue()) # initial number of agents at the start of simulation
-        d = int(cp5.getController("Body Size").getValue())  # accessing agent size scaling parameter
-        r = int(cp5.getController("r of FoV").getValue())   # radius of field of view
-        fov = int(cp5.getController("FoV Angle").getValue())    # angle of filed of view
+        oneGeneration = int(cp5.getController("One Generation").getValue())  # number of frames in one generation
+        forageFactor = float(cp5.getController("Forage Factor").getValue())   # radius of field of view
+        predationSuccessProb = float(cp5.getController("Predation Success Rate").getValue())    # angle of filed of view
         showSim = cp5.getController("Show Simulation?").getValue()   # decision to show simulation or just make computations in background
         saveData = cp5.getController("Save Data?").getValue()   # decision to log simulation data on PC
         alarmPotency = cp5.getController("Alarm Potency").getValue() # alarm conditions
         popGrowth = int(cp5.getController("Enable Reproduction").getValue())   # option of reproduction
         scanFreq = int(cp5.getController("Scan Freq").getValue())   # visual scan frequency
-        rtm = cp5.getController("Time Scale").getValue()   # real time multipier    [/second to /frame]
-        rdm = cp5.getController("Space Scale").getValue()   # real distance multipier   [meter to px] 
+        breedingProbability = float(cp5.getController("Replication Probability").getValue())  # probability of breeding after fBreed frames
+        eIntakeFactor = float(cp5.getController("Energy Intake Factor").getValue())  # energy intake from kill
         growthRate = cp5.getController("rGrowth%").getValue()   # resource % growth in a day
 
-        # rsm = 10/(rdm*fps) # real speed multiplier [m/s to px/frame] - rtm omitted purposefully
-        oneSecond = fps/rtm # number of frames in a second
-        oneMinute = 60*oneSecond # number of frames in a minute
-        oneHour = math.ceil(60*oneMinute)  # number of frames in a hour
-        oneDay = math.ceil(24*oneHour)  # number of frames in a day
-        oneYear = math.ceil(365*oneDay)  # number of frames in a year
-        oneMeter = 1/rdm
-
-
-        oneGeneration = 10000 # means 10,000 frames reprepresenting total adult age of the vervet and the predators
-        oneYear = 1000  # number of frames in a year in the simulation
+        # oneGeneration = 10000 # means 10,000 frames reprepresenting total adult age of the vervet and the predators
         oneMeter = 1 # makes 1 m to 1 px
 
         rsm = .5 # speed multiplier: makes 10 m/s to 1 px/frame
+        r = 50  # distance factor perceptible to vervets
+        fov = 200  # frontal field of view of vervets in degrees
+        agentSize = 10  # size of vervet agents
 
-
-        # fBreed = oneYear    # to be tuned
-        # scanFreq = math.ceil(scanFreq * oneMinute)
-
-        fBreed = oneGeneration / 10 # frequency of breeding
+        fBreed = oneGeneration/10.0 # frequency of breeding, i.e., 10% of total age
+        scanFreq = fBreed/20.0 # visual scan frequency
 
         r = r * oneMeter
         resourceRichness = 1
+        growthRate = 1000.0 * growthRate/ oneGeneration
+
+
+
+        print("n1: ", n1, "n2: ", n2, "n3: ", n3, "n: ", n, "agentSize: ", agentSize, "forageFactor: ", forageFactor, "predationSuccessProb: ", predationSuccessProb, "fBreed: ", fBreed, "r: ", r, "alarmPotency: ", alarmPotency, "popGrowth: ", popGrowth, "scanFreq: ", scanFreq, "breedingProbability: ", breedingProbability, "eIntakeFactor: ", eIntakeFactor, "growthRate: ", growthRate)
         
         # creating resource patches in the environment
         refuge = list()
@@ -192,37 +188,36 @@ def draw():
 
         lRefuge, hRefuge, pRefuge = avoidLocations
 
-        lastKill = 300  # assuming lastKill was 300 frames ago, just to make them ready to hunt
+        lastKill = oneGeneration/100.0  # assuming lastKill was oneGeneration/100.0 frames ago, just to make them ready to hunt
 
 
-        # generating stimuli at the start of simulation    
+        # generating stimuli at the start of simulation 
+        intialAge = 0   # age of predators at the start of simulation
+
         for i in range(n1):
             # img, type, aAge, x, y, xspeed, yspeed, hl, lastKill, eLevel
             lx, ly = getInitialPredatorLocations(lRefuge)
-            randAge = int(10 * oneYear * random.uniform(0,1))
             eLevel = eMax 
             lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
             lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
             swf = 14
-            stim.append(stimulus.stimulus(img1, 'leopard', randAge, lx, ly, lMaxSpeed, lOrient, lRefuge, lastKill, swf, eLevel, eMax))   # lh: leopard refuge
+            stim.append(stimulus.stimulus(img1, 'leopard', intialAge, lx, ly, lMaxSpeed, lOrient, lRefuge, lastKill, swf, eLevel, eMax))   # lh: leopard refuge
 
         for i in range(n2):
             hx, hy = getInitialPredatorLocations(hRefuge)
-            randAge = int(10 * oneYear * random.uniform(0,1))
             eLevel = eMax
-            hMaxSpeed = 45 * rsm
+            hMaxSpeed = 15 * rsm    # predFactor kept same for all predators - one factors also changed to same are fearFactor, swf, awarenessFactor
             hOrient = 2 * math.pi * random.uniform(0,1)
             swf = 14
-            stim.append(stimulus.stimulus(img2, 'hawk', randAge, hx, hy, hMaxSpeed, hOrient, hRefuge, lastKill, swf, eLevel, eMax))
+            stim.append(stimulus.stimulus(img2, 'hawk', intialAge, hx, hy, hMaxSpeed, hOrient, hRefuge, lastKill, swf, eLevel, eMax))
 
         for i in range(n3):
             px, py = getInitialPredatorLocations(pRefuge)
-            randAge = int(10 * oneYear * random.uniform(0,1))
             eLevel = eMax 
-            pMaxSpeed = .45 * rsm
+            pMaxSpeed = 15 * rsm
             pOrient = 2 * math.pi * random.uniform(0,1)
             swf = 365
-            stim.append(stimulus.stimulus(img3, 'python', randAge, px, py, pMaxSpeed, pOrient, pRefuge, lastKill, swf, eLevel, eMax))
+            stim.append(stimulus.stimulus(img3, 'python', intialAge, px, py, pMaxSpeed, pOrient, pRefuge, lastKill, swf, eLevel, eMax))
 
 
         # creating an array of agents at the start of simulation 
@@ -233,10 +228,10 @@ def draw():
             movement = 1    # movemevent rule, default is to forage
             recentlySeenPredator = 0    # information about having recently seen predator
             threat = 0  # awareness about predator
-            aAge = int(10 * oneYear * random.uniform(0,1)) # random adult age at start of simulation
+            aAge = 0 # adult age at start of simulation
             maxSpeed = 10 * rsm
             swf = 30 # to be tuned
-            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
+            objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, agentSize, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
         
 
         # creating and initializing headers for simulation data to be saved
@@ -247,8 +242,6 @@ def draw():
         start = 1   # as simulation is ready to run now!
         startOfSim = frameCount # assigning the framenumber when simulation starts
         deathLocation = []  # to keep track of death of agents
-
-        # showOnConsoleAfterRun(fps, rtm, rdm, eMax, fMax, growthRate, scanFreq, r, resourceRichness)
 
     if(start==1):
         bc = color(114,81,48)
@@ -277,7 +270,7 @@ def draw():
         # processing predators - death, movement & display
         i=0
         while(i<len(stim)):
-            if((stim[i].eLevel< .01*stim[i].eMax or stim[i].aAge >= 10 * oneYear) and len(stim)>0):  # death by starvation/aging
+            if((stim[i].eLevel< .01*stim[i].eMax or stim[i].aAge >= oneGeneration) and len(stim)>0):  # death by starvation/aging
                 if(stim[i].type=='leopard'):
                     n_leopard -= 1
                 elif(stim[i].type=='hawk'):
@@ -287,7 +280,7 @@ def draw():
                 del stim[i]
                 i -= 1
             else:
-                stim[i].move(oneHour)
+                stim[i].move(oneGeneration)
                 if(showSim == 1):
                     stim[i].display()
                 stim[i].aAge += 1
@@ -295,7 +288,7 @@ def draw():
 
         # processing patches
         for i in range(len(patch)):
-            patch[i].patchPoints = patch[i].regrow(oneDay, growthRate)
+            patch[i].patchPoints = patch[i].regrow(growthRate)
             if showSim == 1:
                 patch[i].display()  # display each resource patch
                 
@@ -332,14 +325,14 @@ def draw():
                 del objs[i]
                 i -= 1
 
-            elif(objs[i].aAge >= 10 * oneYear): # death due to aging
+            elif(objs[i].aAge >= oneGeneration): # death due to aging
                 deathLocation.append([objs[i].xpos,objs[i].ypos,0,3])
                 del objs[i]
                 i -= 1
 
                 
             else:
-                objs[i].move(i,r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim, oneMeter, oneMinute)  
+                objs[i].move(i,r, fov, i, refuge, len(objs), alarmPotency, first2See, frameCount - startOfSim + 1, scanFreq, showSim, oneMeter, eIntakeFactor, forageFactor, predationSuccessProb, oneGeneration)  
                 
                 if(showSim == 1):
                     objs[i].display(i)
@@ -351,9 +344,10 @@ def draw():
             i += 1
 
         # modeling agent reproduction
+        vervetBreedingProbability = .5
         if((frameCount-startOfSim+1)%fBreed==0 and popGrowth==1):   # fBreed: breeding frequency
             for i in range(len(objs)):
-                if(objs[i].eLevel > .5 * eMax and random.uniform(0,1) > .5):
+                if(objs[i].eLevel > .5 * eMax and random.uniform(0,1) < vervetBreedingProbability):
                     alpha = 2 * math.pi * random.uniform(0,1)
                     movement = 1
                     recentlySeenPredator = 0
@@ -362,37 +356,36 @@ def draw():
                     maxSpeed = 10 * rsm
                     eLevel = eMax 
                     swf = 30
-                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, d, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
+                    objs.append(vehicle.vehicle(random.uniform(0,.9*width), random.uniform(0,D), maxSpeed, aAge, agentSize, stim, alpha, movement, recentlySeenPredator, threat, eLevel, eMax, 0, fMax, [0,0], swf, patch))
 
         # modelling predator reproduction
+        predadtorBreedingProbability = breedingProbability
         if((frameCount-startOfSim+1)%fBreed==0 and popGrowth==1):
             for i in range(len(stim)):    
                 stim_aAge = 0
 
-                expectedNumberOfEachPredator = len(objs) / (10 * 3)
-
-                if(stim[i].type == 'leopard' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_leopard/expectedNumberOfEachPredator)):       
+                if(stim[i].type == 'leopard' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) < predadtorBreedingProbability):       
                     lx, ly = getInitialPredatorLocations(lRefuge)
                     eLevel = eMax 
                     lMaxSpeed = 15 * rsm    # max speed of leopard = 15 m/sec
                     lOrient = 2 * math.pi * random.uniform(0,1) # intial orientation of leopard
-                    swf = 14
+                    swf = 14    # not used for now
                     stim.append(stimulus.stimulus(img1, 'leopard', stim_aAge, lx, ly, lMaxSpeed, lOrient, lRefuge, lastKill, swf, eLevel, eMax))
                     n_leopard += 1
 
-                elif(stim[i].type == 'hawk' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_hawk/expectedNumberOfEachPredator)):
+                elif(stim[i].type == 'hawk' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) < predadtorBreedingProbability):
                     hx, hy = getInitialPredatorLocations(hRefuge)
                     eLevel = eMax 
-                    hMaxSpeed = 45 * rsm
+                    hMaxSpeed = 15 * rsm
                     hOrient = 2 * math.pi * random.uniform(0,1)
                     swf = 14
                     stim.append(stimulus.stimulus(img2, 'hawk', stim_aAge, hx, hy, hMaxSpeed, hOrient, hRefuge, lastKill, swf, eLevel, eMax))
                     n_hawk += 1
 
-                elif(stim[i].type == 'python' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) > (n_python/expectedNumberOfEachPredator)):
+                elif(stim[i].type == 'python' and stim[i].eLevel > .5 * eMax and random.uniform(0,1) < predadtorBreedingProbability):
                     px, py = getInitialPredatorLocations(pRefuge)
                     eLevel = eMax 
-                    pMaxSpeed = .45 * rsm
+                    pMaxSpeed = 15 * rsm
                     pOrient = 2 * math.pi * random.uniform(0,1)
                     swf = 365
                     stim.append(stimulus.stimulus(img3, 'python', stim_aAge, px, py, pMaxSpeed, pOrient, pRefuge, lastKill, swf, eLevel, eMax))
@@ -405,13 +398,13 @@ def draw():
                 deathLocation[x][2] += 1
                 if(deathLocation[x][3]==1 and showSim == 1):    # death by starvation
                     fill(0)
-                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*d/9)
+                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*agentSize/9)
                 elif(deathLocation[x][3]==2 and showSim == 1):  # death by predation
                     fill(0)
-                    circle(deathLocation[x][0],deathLocation[x][1],20*d/9)
+                    circle(deathLocation[x][0],deathLocation[x][1],20*agentSize/9)
                 elif(deathLocation[x][3]==3 and showSim == 1):  # death by aging
                     fill(255)
-                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*d/9)
+                    square(deathLocation[x][0]-10,deathLocation[x][1]-10,20*agentSize/9)
                     fill(0)
             else:
                 del deathLocation[x]
@@ -421,9 +414,9 @@ def draw():
         
         # displaying simulation states live
         textSize(12)
-        text("Generation: ",10,635)
+        text("Generation Count: ",10,635)
         frameNumber = frameCount-startOfSim+1
-        text(frameNumber,95,635)
+        text(float(frameNumber)/oneGeneration,125,635)
 
         fill(255,0,0)
         text("#Python:", .9*width + 5, 605)

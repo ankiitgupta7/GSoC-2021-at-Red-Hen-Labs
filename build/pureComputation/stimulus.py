@@ -20,8 +20,7 @@ class stimulus(object):
 
 
     # takes care of vehicle movement
-    def move(self, oneHour, width, height):
-        oneDay = 24*oneHour
+    def move(self, oneGeneration, width, height):
         closestAvoidDist, safeDist = getClosestAvoidDist(self,  width, height)
         hLevel = self.eMax - self.eLevel
         v = self.maxSpeed * hLevel / self.eMax
@@ -37,7 +36,8 @@ class stimulus(object):
             self.orient += math.pi
 
         # predators don't move for 20 frames after kill, don't kill for about 300 frames after kill
-        if self.lastKill > 20:
+        stayAfterKill = oneGeneration/500.0
+        if self.lastKill > stayAfterKill:
             self.x = self.x + vx
             self.y = self.y + vy
         else:
@@ -46,17 +46,12 @@ class stimulus(object):
         # time elapsed after last kill
         self.lastKill += 1
 
-        # # energy decay per frame
-        # edr = self.eMax / (oneDay*self.swf) # energy decay rate (per frame)
+        energyDecayRate = 1.0 / oneGeneration   # energy decay per frame, consider the survival without food factor
 
-        energyDecayRate = 0.0001   # .1% of eMax energy decay per frame along with the survival without food factor
-        # self.eLevel -= (.1*edr*v/self.maxSpeed + edr) # to be tuned later
+        self.eLevel -= energyDecayRate * self.eMax + v * 10.0 / oneGeneration
 
-        self.eLevel -= energyDecayRate * self.eMax + v / 10 # to be tuned later
- 
- 
        # to make the stimuli rebound from boundaries
-        if self.x >= .9*width or self.x <=0 or self.y >= height or self.y <=0:
+        if self.x >= width or self.x <=0 or self.y >= height or self.y <=0:
             self.orient += math.pi/2
 
 
